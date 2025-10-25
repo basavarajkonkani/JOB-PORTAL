@@ -1,0 +1,78 @@
+# Uptime monitoring configuration
+# This file can be used with services like UptimeRobot, Pingdom, or self-hosted solutions
+
+monitors:
+  - name: "Backend API Health"
+    type: "http"
+    url: "https://api.yourdomain.com/health"
+    method: "GET"
+    interval: 60 # seconds
+    timeout: 10 # seconds
+    expected_status: 200
+    alert_threshold: 3 # consecutive failures before alert
+    
+  - name: "Frontend Homepage"
+    type: "http"
+    url: "https://yourdomain.com"
+    method: "GET"
+    interval: 60
+    timeout: 10
+    expected_status: 200
+    alert_threshold: 3
+    
+  - name: "API Jobs Endpoint"
+    type: "http"
+    url: "https://api.yourdomain.com/api/jobs"
+    method: "GET"
+    interval: 300 # 5 minutes
+    timeout: 10
+    expected_status: 200
+    alert_threshold: 2
+    
+  - name: "Database Connection"
+    type: "custom"
+    description: "Check database connectivity via health endpoint"
+    url: "https://api.yourdomain.com/health"
+    method: "GET"
+    interval: 120
+    timeout: 10
+    expected_response_contains: '"database":true'
+    alert_threshold: 3
+    
+  - name: "Redis Connection"
+    type: "custom"
+    description: "Check Redis connectivity via health endpoint"
+    url: "https://api.yourdomain.com/health"
+    method: "GET"
+    interval: 120
+    timeout: 10
+    expected_response_contains: '"redis":true'
+    alert_threshold: 3
+
+# Alert channels
+alerts:
+  - type: "email"
+    recipients:
+      - "ops@yourdomain.com"
+      - "dev@yourdomain.com"
+    
+  - type: "slack"
+    webhook_url: "${SLACK_WEBHOOK_URL}"
+    channel: "#alerts"
+    
+  - type: "pagerduty"
+    integration_key: "${PAGERDUTY_KEY}"
+    severity: "critical"
+
+# Response time thresholds
+performance:
+  warning_threshold: 1000 # ms
+  critical_threshold: 3000 # ms
+  
+# Maintenance windows (no alerts during these times)
+maintenance_windows:
+  - name: "Weekly Maintenance"
+    day: "Sunday"
+    start_time: "02:00"
+    end_time: "04:00"
+    timezone: "UTC"

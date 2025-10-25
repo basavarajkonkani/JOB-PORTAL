@@ -1,0 +1,8 @@
+{
+  "migrations-dir": "src/migrations",
+  "database-url-var": "DATABASE_URL",
+  "migration-file-language": "ts",
+  "migration-filename-format": "utc",
+  "timestamp": true,
+  "ignore-pattern": "^(README|IMPLEMENTATION|seeds)"
+}

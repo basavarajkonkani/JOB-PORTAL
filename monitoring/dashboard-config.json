@@ -1,0 +1,207 @@
+{
+  "dashboard": {
+    "name": "AI Job Portal Monitoring",
+    "description": "Main monitoring dashboard for the AI Job Portal application",
+    "refresh_interval": 60,
+    "panels": [
+      {
+        "id": "system_health",
+        "title": "System Health",
+        "type": "status",
+        "metrics": [
+          {
+            "name": "Overall Status",
+            "query": "health_check.status",
+            "thresholds": {
+              "healthy": "green",
+              "degraded": "yellow",
+              "unhealthy": "red"
+            }
+          },
+          {
+            "name": "Uptime",
+            "query": "system.uptime",
+            "format": "duration"
+          }
+        ]
+      },
+      {
+        "id": "api_performance",
+        "title": "API Performance",
+        "type": "timeseries",
+        "metrics": [
+          {
+            "name": "Response Time (p95)",
+            "query": "api.response_time",
+            "aggregation": "p95",
+            "unit": "ms"
+          },
+          {
+            "name": "Response Time (p50)",
+            "query": "api.response_time",
+            "aggregation": "p50",
+            "unit": "ms"
+          },
+          {
+            "name": "Request Rate",
+            "query": "api.requests",
+            "aggregation": "rate",
+            "unit": "req/s"
+          }
+        ],
+        "time_range": "1h"
+      },
+      {
+        "id": "error_rate",
+        "title": "Error Rate",
+        "type": "timeseries",
+        "metrics": [
+          {
+            "name": "4xx Errors",
+            "query": "api.response_time{status=~'4..'} ",
+            "aggregation": "rate",
+            "color": "orange"
+          },
+          {
+            "name": "5xx Errors",
+            "query": "api.response_time{status=~'5..'}",
+            "aggregation": "rate",
+            "color": "red"
+          }
+        ],
+        "time_range": "1h"
+      },
+      {
+        "id": "ai_service",
+        "title": "AI Service Metrics",
+        "type": "timeseries",
+        "metrics": [
+          {
+            "name": "AI Operation Duration",
+            "query": "ai.operation",
+            "aggregation": "avg",
+            "unit": "ms"
+          },
+          {
+            "name": "AI Success Rate",
+            "query": "ai.operation{success='true'}",
+            "aggregation": "rate",
+            "unit": "%"
+          }
+        ],
+        "time_range": "1h"
+      },
+      {
+        "id": "database_performance",
+        "title": "Database Performance",
+        "type": "timeseries",
+        "metrics": [
+          {
+            "name": "Query Duration (avg)",
+            "query": "database.query_time",
+            "aggregation": "avg",
+            "unit": "ms"
+          },
+          {
+            "name": "Query Duration (p95)",
+            "query": "database.query_time",
+            "aggregation": "p95",
+            "unit": "ms"
+          },
+          {
+            "name": "Active Connections",
+            "query": "database.connections",
+            "aggregation": "last"
+          }
+        ],
+        "time_range": "1h"
+      },
+      {
+        "id": "cache_performance",
+        "title": "Cache Performance",
+        "type": "pie",
+        "metrics": [
+          {
+            "name": "Cache Hits",
+            "query": "cache.operation{operation='hit'}",
+            "aggregation": "sum"
+          },
+          {
+            "name": "Cache Misses",
+            "query": "cache.operation{operation='miss'}",
+            "aggregation": "sum"
+          }
+        ],
+        "time_range": "1h"
+      },
+      {
+        "id": "top_endpoints",
+        "title": "Top Endpoints by Traffic",
+        "type": "table",
+        "metrics": [
+          {
+            "name": "Endpoint",
+            "query": "api.response_time",
+            "group_by": "endpoint",
+            "aggregation": "count",
+            "limit": 10
+          }
+        ],
+        "time_range": "1h"
+      },
+      {
+        "id": "slow_endpoints",
+        "title": "Slowest Endpoints",
+        "type": "table",
+        "metrics": [
+          {
+            "name": "Endpoint",
+            "query": "api.response_time",
+            "group_by": "endpoint",
+            "aggregation": "p95",
+            "limit": 10,
+            "sort": "desc"
+          }
+        ],
+        "time_range": "1h"
+      }
+    ],
+    "alerts": [
+      {
+        "name": "High Error Rate",
+        "condition": "api.response_time{status=~'5..'} > 10",
+        "duration": "5m",
+        "severity": "critical",
+        "message": "5xx error rate is above 10 requests/min"
+      },
+      {
+        "name": "Slow Response Time",
+        "condition": "api.response_time{aggregation='p95'} > 3000",
+        "duration": "5m",
+        "severity": "warning",
+        "message": "API p95 response time is above 3 seconds"
+      },
+      {
+        "name": "Database Connection Issues",
+        "condition": "health_check.checks.database == false",
+        "duration": "1m",
+        "severity": "critical",
+        "message": "Database health check is failing"
+      },
+      {
+        "name": "Redis Connection Issues",
+        "condition": "health_check.checks.redis == false",
+        "duration": "1m",
+        "severity": "warning",
+        "message": "Redis health check is failing"
+      },
+      {
+        "name": "AI Service Degraded",
+        "condition": "ai.operation{success='false'} / ai.operation > 0.2",
+        "duration": "5m",
+        "severity": "warning",
+        "message": "AI service failure rate is above 20%"
+      }
+    ]
+  }
+}
