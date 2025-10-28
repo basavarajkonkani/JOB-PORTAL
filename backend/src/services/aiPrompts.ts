@@ -90,10 +90,7 @@ export function getCoverLetterUserPrompt(
   candidateProfile: CandidateProfile
 ): string {
   const experienceList = candidateProfile.experience
-    .map(
-      (exp) =>
-        `${exp.title} at ${exp.company}: ${exp.description}`
-    )
+    .map((exp) => `${exp.title} at ${exp.company}: ${exp.description}`)
     .join('\n');
 
   return `Write a cover letter for this application:

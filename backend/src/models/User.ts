@@ -1,10 +1,9 @@
-import pool from '../config/database';
-import bcrypt from 'bcrypt';
+import { getAuth, getFirestore } from '../config/firebase';
+import admin from 'firebase-admin';
 
 export interface User {
   id: string;
   email: string;
-  passwordHash: string;
   role: 'candidate' | 'recruiter' | 'admin';
   name: string;
   avatarUrl?: string;
@@ -25,136 +24,240 @@ export interface UpdateUserData {
   avatarUrl?: string;
 }
 
-const SALT_ROUNDS = 12;
+const USERS_COLLECTION = 'users';
 
 export class UserModel {
   /**
-   * Hash a plain text password
-   */
-  static async hashPassword(password: string): Promise<string> {
-    return bcrypt.hash(password, SALT_ROUNDS);
-  }
-
-  /**
-   * Compare a plain text password with a hash
-   */
-  static async comparePassword(password: string, hash: string): Promise<boolean> {
-    return bcrypt.compare(password, hash);
-  }
-
-  /**
-   * Create a new user
+   * Create a new user in Firebase Auth and Firestore
    */
   static async create(userData: CreateUserData): Promise<User> {
-    const passwordHash = await this.hashPassword(userData.password);
-    
-    const query = `
-      INSERT INTO users (email, password_hash, role, name, avatar_url)
-      VALUES ($1, $2, $3, $4, $5)
-      RETURNING id, email, password_hash as "passwordHash", role, name, 
-                avatar_url as "avatarUrl", created_at as "createdAt", 
-                updated_at as "updatedAt"
-    `;
-    
-    const values = [
-      userData.email,
-      passwordHash,
-      userData.role,
-      userData.name,
-      userData.avatarUrl || null,
-    ];
-    
-    const result = await pool.query(query, values);
-    return result.rows[0];
+    const auth = getAuth();
+    const firestore = getFirestore();
+
+    try {
+      // Create user in Firebase Auth
+      const userRecord = await auth.createUser({
+        email: userData.email,
+        password: userData.password,
+        displayName: userData.name,
+        photoURL: userData.avatarUrl,
+      });
+
+      // Set custom claims for role
+      await auth.setCustomUserClaims(userRecord.uid, {
+        role: userData.role,
+      });
+
+      // Create user document in Firestore
+      const now = new Date();
+      const userDoc = {
+        email: userData.email,
+        role: userData.role,
+        name: userData.name,
+        avatarUrl: userData.avatarUrl || null,
+        createdAt: admin.firestore.Timestamp.fromDate(now),
+        updatedAt: admin.firestore.Timestamp.fromDate(now),
+      };
+
+      await firestore.collection(USERS_COLLECTION).doc(userRecord.uid).set(userDoc);
+
+      return {
+        id: userRecord.uid,
+        email: userData.email,
+        role: userData.role,
+        name: userData.name,
+        avatarUrl: userData.avatarUrl,
+        createdAt: now,
+        updatedAt: now,
+      };
+    } catch (error) {
+      // If Firestore write fails, try to clean up Auth user
+      if (error instanceof Error && error.message.includes('Firestore')) {
+        try {
+          const userRecord = await auth.getUserByEmail(userData.email);
+          await auth.deleteUser(userRecord.uid);
+        } catch (cleanupError) {
+          // Ignore cleanup errors
+        }
+      }
+      throw error;
+    }
   }
 
   /**
-   * Find a user by ID
+   * Find a user by ID from Firestore
    */
   static async findById(id: string): Promise<User | null> {
-    const query = `
-      SELECT id, email, password_hash as "passwordHash", role, name, 
-             avatar_url as "avatarUrl", created_at as "createdAt", 
-             updated_at as "updatedAt"
-      FROM users
-      WHERE id = $1
-    `;
-    
-    const result = await pool.query(query, [id]);
-    return result.rows[0] || null;
+    const firestore = getFirestore();
+
+    try {
+      const docRef = firestore.collection(USERS_COLLECTION).doc(id);
+      const doc = await docRef.get();
+
+      if (!doc.exists) {
+        return null;
+      }
+
+      const data = doc.data();
+      if (!data) {
+        return null;
+      }
+
+      return {
+        id: doc.id,
+        email: data.email,
+        role: data.role,
+        name: data.name,
+        avatarUrl: data.avatarUrl || undefined,
+        createdAt: data.createdAt?.toDate() || new Date(),
+        updatedAt: data.updatedAt?.toDate() || new Date(),
+      };
+    } catch (error) {
+      throw new Error(
+        `Failed to find user by ID: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
   }
 
   /**
-   * Find a user by email
+   * Find a user by email using Firestore where query
    */
   static async findByEmail(email: string): Promise<User | null> {
-    const query = `
-      SELECT id, email, password_hash as "passwordHash", role, name, 
-             avatar_url as "avatarUrl", created_at as "createdAt", 
-             updated_at as "updatedAt"
-      FROM users
-      WHERE email = $1
-    `;
-    
-    const result = await pool.query(query, [email]);
-    return result.rows[0] || null;
+    const firestore = getFirestore();
+
+    try {
+      const querySnapshot = await firestore
+        .collection(USERS_COLLECTION)
+        .where('email', '==', email)
+        .limit(1)
+        .get();
+
+      if (querySnapshot.empty) {
+        return null;
+      }
+
+      const doc = querySnapshot.docs[0];
+      const data = doc.data();
+
+      return {
+        id: doc.id,
+        email: data.email,
+        role: data.role,
+        name: data.name,
+        avatarUrl: data.avatarUrl || undefined,
+        createdAt: data.createdAt?.toDate() || new Date(),
+        updatedAt: data.updatedAt?.toDate() || new Date(),
+      };
+    } catch (error) {
+      throw new Error(
+        `Failed to find user by email: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
   }
 
   /**
-   * Update a user
+   * Update a user in Firestore
    */
   static async update(id: string, userData: UpdateUserData): Promise<User | null> {
-    const updates: string[] = [];
-    const values: any[] = [];
-    let paramCount = 1;
+    const firestore = getFirestore();
+    const auth = getAuth();
 
-    if (userData.name !== undefined) {
-      updates.push(`name = $${paramCount}`);
-      values.push(userData.name);
-      paramCount++;
-    }
+    try {
+      const docRef = firestore.collection(USERS_COLLECTION).doc(id);
+      const doc = await docRef.get();
 
-    if (userData.avatarUrl !== undefined) {
-      updates.push(`avatar_url = $${paramCount}`);
-      values.push(userData.avatarUrl);
-      paramCount++;
-    }
+      if (!doc.exists) {
+        return null;
+      }
 
-    if (updates.length === 0) {
+      // Prepare update data
+      const updateData: any = {
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      };
+
+      if (userData.name !== undefined) {
+        updateData.name = userData.name;
+      }
+
+      if (userData.avatarUrl !== undefined) {
+        updateData.avatarUrl = userData.avatarUrl;
+      }
+
+      // Update Firestore document
+      await docRef.update(updateData);
+
+      // Update Firebase Auth profile if name or avatar changed
+      const authUpdateData: any = {};
+      if (userData.name !== undefined) {
+        authUpdateData.displayName = userData.name;
+      }
+      if (userData.avatarUrl !== undefined) {
+        authUpdateData.photoURL = userData.avatarUrl;
+      }
+
+      if (Object.keys(authUpdateData).length > 0) {
+        try {
+          await auth.updateUser(id, authUpdateData);
+        } catch (authError) {
+          // Log but don't fail if Auth update fails
+          console.error('Failed to update Firebase Auth profile:', authError);
+        }
+      }
+
+      // Fetch and return updated user
       return this.findById(id);
+    } catch (error) {
+      throw new Error(
+        `Failed to update user: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
-
-    updates.push(`updated_at = CURRENT_TIMESTAMP`);
-    values.push(id);
-
-    const query = `
-      UPDATE users
-      SET ${updates.join(', ')}
-      WHERE id = $${paramCount}
-      RETURNING id, email, password_hash as "passwordHash", role, name, 
-                avatar_url as "avatarUrl", created_at as "createdAt", 
-                updated_at as "updatedAt"
-    `;
-
-    const result = await pool.query(query, values);
-    return result.rows[0] || null;
   }
 
   /**
-   * Delete a user
+   * Delete a user from Firebase Auth and Firestore
    */
   static async delete(id: string): Promise<boolean> {
-    const query = 'DELETE FROM users WHERE id = $1';
-    const result = await pool.query(query, [id]);
-    return result.rowCount !== null && result.rowCount > 0;
+    const firestore = getFirestore();
+    const auth = getAuth();
+
+    try {
+      // Delete from Firestore
+      await firestore.collection(USERS_COLLECTION).doc(id).delete();
+
+      // Delete from Firebase Auth
+      try {
+        await auth.deleteUser(id);
+      } catch (authError) {
+        // Log but don't fail if Auth deletion fails (user might not exist in Auth)
+        console.error('Failed to delete user from Firebase Auth:', authError);
+      }
+
+      return true;
+    } catch (error) {
+      throw new Error(
+        `Failed to delete user: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
   }
 
   /**
-   * Check if email exists
+   * Check if email exists in Firestore
    */
   static async emailExists(email: string): Promise<boolean> {
-    const query = 'SELECT 1 FROM users WHERE email = $1';
-    const result = await pool.query(query, [email]);
-    return result.rows.length > 0;
+    const firestore = getFirestore();
+
+    try {
+      const querySnapshot = await firestore
+        .collection(USERS_COLLECTION)
+        .where('email', '==', email)
+        .limit(1)
+        .get();
+
+      return !querySnapshot.empty;
+    } catch (error) {
+      throw new Error(
+        `Failed to check email existence: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
   }
 }

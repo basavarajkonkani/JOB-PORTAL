@@ -1,0 +1,46 @@
+{
+  "rolledBackAt": "2025-10-27T08:41:40.715Z",
+  "backupPath": null,
+  "stats": {
+    "users": {
+      "deleted": 0,
+      "failed": 0
+    },
+    "organizations": {
+      "deleted": 0,
+      "failed": 0
+    },
+    "candidateProfiles": {
+      "deleted": 0,
+      "failed": 0
+    },
+    "recruiterProfiles": {
+      "deleted": 0,
+      "failed": 0
+    },
+    "jobs": {
+      "deleted": 0,
+      "failed": 0
+    },
+    "applications": {
+      "deleted": 0,
+      "failed": 0
+    },
+    "resumes": {
+      "deleted": 0,
+      "failed": 0
+    },
+    "storageFiles": {
+      "deleted": 0,
+      "failed": 0
+    },
+    "realtimeData": {
+      "deleted": 0,
+      "failed": 0
+    }
+  },
+  "summary": {
+    "totalDeleted": 0,
+    "totalFailed": 0
+  }
+}

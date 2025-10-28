@@ -1,4 +1,5 @@
-import pool from '../config/database';
+import { getFirestore } from '../config/firebase';
+import admin from 'firebase-admin';
 
 export interface Experience {
   company: string;
@@ -50,144 +51,293 @@ export interface UpdateCandidateProfileData {
   preferences?: Preferences;
 }
 
+const CANDIDATE_PROFILES_COLLECTION = 'candidateProfiles';
+
 export class CandidateProfileModel {
   /**
-   * Create a new candidate profile
+   * Create a new candidate profile in Firestore
    */
   static async create(profileData: CreateCandidateProfileData): Promise<CandidateProfile> {
-    const query = `
-      INSERT INTO candidate_profiles (
-        user_id, location, skills, experience, education, preferences
-      )
-      VALUES ($1, $2, $3, $4, $5, $6)
-      RETURNING 
-        user_id as "userId",
-        location,
-        skills,
-        experience,
-        education,
-        preferences,
-        created_at as "createdAt",
-        updated_at as "updatedAt"
-    `;
+    const firestore = getFirestore();
 
-    const values = [
-      profileData.userId,
-      profileData.location || '',
-      profileData.skills || [],
-      JSON.stringify(profileData.experience || []),
-      JSON.stringify(profileData.education || []),
-      JSON.stringify(profileData.preferences || {}),
-    ];
+    try {
+      const now = new Date();
+      const profileDoc = {
+        userId: profileData.userId,
+        location: profileData.location || '',
+        skills: profileData.skills || [],
+        experience: profileData.experience || [],
+        education: profileData.education || [],
+        preferences: profileData.preferences || {},
+        createdAt: admin.firestore.Timestamp.fromDate(now),
+        updatedAt: admin.firestore.Timestamp.fromDate(now),
+      };
 
-    const result = await pool.query(query, values);
-    return result.rows[0];
+      // Use userId as document ID for easy lookup
+      await firestore
+        .collection(CANDIDATE_PROFILES_COLLECTION)
+        .doc(profileData.userId)
+        .set(profileDoc);
+
+      return {
+        userId: profileData.userId,
+        location: profileDoc.location,
+        skills: profileDoc.skills,
+        experience: profileDoc.experience,
+        education: profileDoc.education,
+        preferences: profileDoc.preferences,
+        createdAt: now,
+        updatedAt: now,
+      };
+    } catch (error) {
+      throw new Error(
+        `Failed to create candidate profile: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
   }
 
   /**
-   * Find a candidate profile by user ID
+   * Find a candidate profile by user ID from Firestore
    */
   static async findByUserId(userId: string): Promise<CandidateProfile | null> {
-    const query = `
-      SELECT 
-        user_id as "userId",
-        location,
-        skills,
-        experience,
-        education,
-        preferences,
-        created_at as "createdAt",
-        updated_at as "updatedAt"
-      FROM candidate_profiles
-      WHERE user_id = $1
-    `;
+    const firestore = getFirestore();
 
-    const result = await pool.query(query, [userId]);
-    return result.rows[0] || null;
+    try {
+      const docRef = firestore.collection(CANDIDATE_PROFILES_COLLECTION).doc(userId);
+      const doc = await docRef.get();
+
+      if (!doc.exists) {
+        return null;
+      }
+
+      const data = doc.data();
+      if (!data) {
+        return null;
+      }
+
+      return {
+        userId: data.userId,
+        location: data.location || '',
+        skills: data.skills || [],
+        experience: data.experience || [],
+        education: data.education || [],
+        preferences: data.preferences || {},
+        createdAt: data.createdAt?.toDate() || new Date(),
+        updatedAt: data.updatedAt?.toDate() || new Date(),
+      };
+    } catch (error) {
+      throw new Error(
+        `Failed to find candidate profile: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
   }
 
   /**
-   * Update a candidate profile
+   * Update a candidate profile in Firestore
    */
   static async update(
     userId: string,
     profileData: UpdateCandidateProfileData
   ): Promise<CandidateProfile | null> {
-    const updates: string[] = [];
-    const values: any[] = [];
-    let paramCount = 1;
+    const firestore = getFirestore();
 
-    if (profileData.location !== undefined) {
-      updates.push(`location = $${paramCount}`);
-      values.push(profileData.location);
-      paramCount++;
-    }
+    try {
+      const docRef = firestore.collection(CANDIDATE_PROFILES_COLLECTION).doc(userId);
+      const doc = await docRef.get();
 
-    if (profileData.skills !== undefined) {
-      updates.push(`skills = $${paramCount}`);
-      values.push(profileData.skills);
-      paramCount++;
-    }
+      if (!doc.exists) {
+        return null;
+      }
 
-    if (profileData.experience !== undefined) {
-      updates.push(`experience = $${paramCount}`);
-      values.push(JSON.stringify(profileData.experience));
-      paramCount++;
-    }
+      // Prepare update data
+      const updateData: any = {
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      };
 
-    if (profileData.education !== undefined) {
-      updates.push(`education = $${paramCount}`);
-      values.push(JSON.stringify(profileData.education));
-      paramCount++;
-    }
+      if (profileData.location !== undefined) {
+        updateData.location = profileData.location;
+      }
 
-    if (profileData.preferences !== undefined) {
-      updates.push(`preferences = $${paramCount}`);
-      values.push(JSON.stringify(profileData.preferences));
-      paramCount++;
-    }
+      if (profileData.skills !== undefined) {
+        updateData.skills = profileData.skills;
+      }
 
-    if (updates.length === 0) {
+      if (profileData.experience !== undefined) {
+        updateData.experience = profileData.experience;
+      }
+
+      if (profileData.education !== undefined) {
+        updateData.education = profileData.education;
+      }
+
+      if (profileData.preferences !== undefined) {
+        updateData.preferences = profileData.preferences;
+      }
+
+      // Update Firestore document
+      await docRef.update(updateData);
+
+      // Fetch and return updated profile
       return this.findByUserId(userId);
+    } catch (error) {
+      throw new Error(
+        `Failed to update candidate profile: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
-
-    updates.push(`updated_at = CURRENT_TIMESTAMP`);
-    values.push(userId);
-
-    const query = `
-      UPDATE candidate_profiles
-      SET ${updates.join(', ')}
-      WHERE user_id = $${paramCount}
-      RETURNING 
-        user_id as "userId",
-        location,
-        skills,
-        experience,
-        education,
-        preferences,
-        created_at as "createdAt",
-        updated_at as "updatedAt"
-    `;
-
-    const result = await pool.query(query, values);
-    return result.rows[0] || null;
   }
 
   /**
-   * Delete a candidate profile
+   * Delete a candidate profile from Firestore
    */
   static async delete(userId: string): Promise<boolean> {
-    const query = 'DELETE FROM candidate_profiles WHERE user_id = $1';
-    const result = await pool.query(query, [userId]);
-    return result.rowCount !== null && result.rowCount > 0;
+    const firestore = getFirestore();
+
+    try {
+      await firestore.collection(CANDIDATE_PROFILES_COLLECTION).doc(userId).delete();
+      return true;
+    } catch (error) {
+      throw new Error(
+        `Failed to delete candidate profile: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
   }
 
   /**
-   * Check if profile exists for user
+   * Check if profile exists for user in Firestore
    */
   static async exists(userId: string): Promise<boolean> {
-    const query = 'SELECT 1 FROM candidate_profiles WHERE user_id = $1';
-    const result = await pool.query(query, [userId]);
-    return result.rows.length > 0;
+    const firestore = getFirestore();
+
+    try {
+      const docRef = firestore.collection(CANDIDATE_PROFILES_COLLECTION).doc(userId);
+      const doc = await docRef.get();
+      return doc.exists;
+    } catch (error) {
+      throw new Error(
+        `Failed to check profile existence: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  }
+
+  /**
+   * Query candidate profiles by skills
+   */
+  static async findBySkills(skills: string[], limit: number = 10): Promise<CandidateProfile[]> {
+    const firestore = getFirestore();
+
+    try {
+      // Firestore array-contains-any supports up to 10 values
+      const skillsToQuery = skills.slice(0, 10);
+
+      const querySnapshot = await firestore
+        .collection(CANDIDATE_PROFILES_COLLECTION)
+        .where('skills', 'array-contains-any', skillsToQuery)
+        .limit(limit)
+        .get();
+
+      if (querySnapshot.empty) {
+        return [];
+      }
+
+      return querySnapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          userId: data.userId,
+          location: data.location || '',
+          skills: data.skills || [],
+          experience: data.experience || [],
+          education: data.education || [],
+          preferences: data.preferences || {},
+          createdAt: data.createdAt?.toDate() || new Date(),
+          updatedAt: data.updatedAt?.toDate() || new Date(),
+        };
+      });
+    } catch (error) {
+      throw new Error(
+        `Failed to find profiles by skills: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  }
+
+  /**
+   * Query candidate profiles by location
+   */
+  static async findByLocation(location: string, limit: number = 10): Promise<CandidateProfile[]> {
+    const firestore = getFirestore();
+
+    try {
+      const querySnapshot = await firestore
+        .collection(CANDIDATE_PROFILES_COLLECTION)
+        .where('location', '==', location)
+        .limit(limit)
+        .get();
+
+      if (querySnapshot.empty) {
+        return [];
+      }
+
+      return querySnapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          userId: data.userId,
+          location: data.location || '',
+          skills: data.skills || [],
+          experience: data.experience || [],
+          education: data.education || [],
+          preferences: data.preferences || {},
+          createdAt: data.createdAt?.toDate() || new Date(),
+          updatedAt: data.updatedAt?.toDate() || new Date(),
+        };
+      });
+    } catch (error) {
+      throw new Error(
+        `Failed to find profiles by location: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  }
+
+  /**
+   * Query candidate profiles by skills and location
+   */
+  static async findBySkillsAndLocation(
+    skills: string[],
+    location: string,
+    limit: number = 10
+  ): Promise<CandidateProfile[]> {
+    const firestore = getFirestore();
+
+    try {
+      // Firestore array-contains-any supports up to 10 values
+      const skillsToQuery = skills.slice(0, 10);
+
+      const querySnapshot = await firestore
+        .collection(CANDIDATE_PROFILES_COLLECTION)
+        .where('skills', 'array-contains-any', skillsToQuery)
+        .where('location', '==', location)
+        .limit(limit)
+        .get();
+
+      if (querySnapshot.empty) {
+        return [];
+      }
+
+      return querySnapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          userId: data.userId,
+          location: data.location || '',
+          skills: data.skills || [],
+          experience: data.experience || [],
+          education: data.education || [],
+          preferences: data.preferences || {},
+          createdAt: data.createdAt?.toDate() || new Date(),
+          updatedAt: data.updatedAt?.toDate() || new Date(),
+        };
+      });
+    } catch (error) {
+      throw new Error(
+        `Failed to find profiles by skills and location: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
   }
 }

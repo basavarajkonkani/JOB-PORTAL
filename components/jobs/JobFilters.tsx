@@ -99,9 +99,7 @@ export default function JobFilters({ filters, onFilterChange }: JobFiltersProps)
 
         {/* Remote Filter */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Work Type
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Work Type</label>
           <div className="space-y-2">
             <label className="flex items-center">
               <input

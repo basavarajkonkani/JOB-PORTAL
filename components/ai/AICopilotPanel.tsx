@@ -40,12 +40,7 @@ export default function AICopilotPanel({
         className="fixed right-4 top-20 z-50 rounded-full bg-blue-600 p-3 text-white shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         aria-label={isOpen ? 'Close AI Copilot' : 'Open AI Copilot'}
       >
-        <svg
-          className="h-6 w-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           {isOpen ? (
             <path
               strokeLinecap="round"
@@ -84,10 +79,7 @@ export default function AICopilotPanel({
             {!isLoading && !response && <EmptyState />}
 
             {!isLoading && response && (
-              <ResponseContent
-                response={response}
-                onActionClick={onActionClick}
-              />
+              <ResponseContent response={response} onActionClick={onActionClick} />
             )}
           </div>
         </div>
@@ -164,11 +156,7 @@ function ResponseContent({ response, onActionClick }: ResponseContentProps) {
     return (
       <div className="rounded-lg border border-red-200 bg-red-50 p-4">
         <div className="flex items-start">
-          <svg
-            className="h-5 w-5 text-red-400"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
+          <svg className="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
             <path
               fillRule="evenodd"
               d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
@@ -176,12 +164,8 @@ function ResponseContent({ response, onActionClick }: ResponseContentProps) {
             />
           </svg>
           <div className="ml-3">
-            <h3 className="text-sm font-medium text-red-800">
-              {response.error}
-            </h3>
-            {response.fallback && (
-              <p className="mt-2 text-sm text-red-700">{response.fallback}</p>
-            )}
+            <h3 className="text-sm font-medium text-red-800">{response.error}</h3>
+            {response.fallback && <p className="mt-2 text-sm text-red-700">{response.fallback}</p>}
           </div>
         </div>
       </div>
@@ -201,17 +185,12 @@ function ResponseContent({ response, onActionClick }: ResponseContentProps) {
         <div className="space-y-2">
           <h3 className="text-sm font-semibold text-gray-900">Details</h3>
           {response.items.map((item, index) => (
-            <div
-              key={index}
-              className="rounded-lg border border-gray-200 bg-white"
-            >
+            <div key={index} className="rounded-lg border border-gray-200 bg-white">
               <button
                 onClick={() => toggleItem(index)}
                 className="flex w-full items-center justify-between p-4 text-left hover:bg-gray-50"
               >
-                <span className="text-sm font-medium text-gray-900">
-                  Item {index + 1}
-                </span>
+                <span className="text-sm font-medium text-gray-900">Item {index + 1}</span>
                 <svg
                   className={`h-5 w-5 transform text-gray-400 transition-transform ${
                     expandedItems.has(index) ? 'rotate-180' : ''
@@ -230,9 +209,7 @@ function ResponseContent({ response, onActionClick }: ResponseContentProps) {
               </button>
               {expandedItems.has(index) && (
                 <div className="border-t border-gray-200 p-4">
-                  <pre className="whitespace-pre-wrap text-sm text-gray-700">
-                    {item}
-                  </pre>
+                  <pre className="whitespace-pre-wrap text-sm text-gray-700">{item}</pre>
                 </div>
               )}
             </div>

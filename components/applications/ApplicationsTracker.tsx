@@ -64,14 +64,11 @@ export default function ApplicationsTracker() {
     setError('');
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/applications`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/applications`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
 
       if (!response.ok) {
         throw new Error('Failed to fetch applications');
@@ -114,14 +111,16 @@ export default function ApplicationsTracker() {
       }
 
       const data = await response.json();
-      
+
       // Update local state
-      setApplications(applications.map(app => 
-        app.id === selectedApplication.id 
-          ? { ...app, notes: editingNotes, updatedAt: data.application.updatedAt }
-          : app
-      ));
-      
+      setApplications(
+        applications.map((app) =>
+          app.id === selectedApplication.id
+            ? { ...app, notes: editingNotes, updatedAt: data.application.updatedAt }
+            : app
+        )
+      );
+
       setSelectedApplication({ ...selectedApplication, notes: editingNotes });
     } catch (err) {
       setError('Failed to save notes. Please try again.');
@@ -207,9 +206,7 @@ export default function ApplicationsTracker() {
               />
             </svg>
             <h3 className="mt-2 text-sm font-medium text-gray-900">No applications yet</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              Start applying to jobs to see them here
-            </p>
+            <p className="mt-1 text-sm text-gray-500">Start applying to jobs to see them here</p>
           </div>
         ) : (
           <div className="divide-y divide-gray-200">
@@ -300,9 +297,7 @@ export default function ApplicationsTracker() {
               <div className="space-y-4">
                 {/* Status */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Status
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
                   <span
                     className={`inline-block px-3 py-1 text-sm font-medium rounded-full ${
                       statusColors[selectedApplication.status]
@@ -314,9 +309,7 @@ export default function ApplicationsTracker() {
 
                 {/* Application Details */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Applied On
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Applied On</label>
                   <p className="text-gray-900">
                     {new Date(selectedApplication.createdAt).toLocaleDateString('en-US', {
                       year: 'numeric',

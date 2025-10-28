@@ -1,5 +1,5 @@
-import { Router, Request, Response } from 'express';
-import { authenticate, authorize } from '../middleware/auth';
+import { Router, Response } from 'express';
+import { authenticateFirebase, authorizeFirebase, AuthRequest } from '../middleware/firebaseAuth';
 import { JobModel, CreateJobData } from '../models/Job';
 import { RecruiterProfileModel } from '../models/RecruiterProfile';
 import { generateJD, generateImage } from '../services/aiService';
@@ -7,14 +7,14 @@ import { generateJD, generateImage } from '../services/aiService';
 const router = Router();
 
 // All routes require authentication and recruiter role
-router.use(authenticate);
-router.use(authorize('recruiter'));
+router.use(authenticateFirebase);
+router.use(authorizeFirebase('recruiter'));
 
 /**
  * POST /api/recruiter/jobs
  * Create a new job posting with optional AI JD generation
  */
-router.post('/jobs', async (req: Request, res: Response): Promise<void> => {
+router.post('/jobs', async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const userId = req.user!.userId;
     const {
@@ -34,7 +34,7 @@ router.post('/jobs', async (req: Request, res: Response): Promise<void> => {
 
     // Get recruiter profile to get orgId
     const recruiterProfile = await RecruiterProfileModel.findByUserId(userId);
-    
+
     if (!recruiterProfile) {
       res.status(400).json({
         code: 'VALIDATION_ERROR',
@@ -57,7 +57,7 @@ router.post('/jobs', async (req: Request, res: Response): Promise<void> => {
     if (generateWithAI && notes) {
       try {
         const generatedJD = await generateJD(notes);
-        
+
         // Parse the AI-generated JD (expecting JSON format)
         let parsedJD;
         try {
@@ -129,7 +129,9 @@ router.post('/jobs', async (req: Request, res: Response): Promise<void> => {
 
     res.status(201).json({
       job,
-      message: generateWithAI ? 'Job created with AI-generated description' : 'Job created successfully',
+      message: generateWithAI
+        ? 'Job created with AI-generated description'
+        : 'Job created successfully',
     });
   } catch (error) {
     console.error('Create job error:', error);
@@ -144,7 +146,7 @@ router.post('/jobs', async (req: Request, res: Response): Promise<void> => {
  * PUT /api/recruiter/jobs/:id
  * Update an existing job posting
  */
-router.put('/jobs/:id', async (req: Request, res: Response): Promise<void> => {
+router.put('/jobs/:id', async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const userId = req.user!.userId;
     const { id } = req.params;
@@ -235,7 +237,7 @@ router.put('/jobs/:id', async (req: Request, res: Response): Promise<void> => {
  * DELETE /api/recruiter/jobs/:id
  * Soft delete a job (set status to 'closed')
  */
-router.delete('/jobs/:id', async (req: Request, res: Response): Promise<void> => {
+router.delete('/jobs/:id', async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const userId = req.user!.userId;
     const { id } = req.params;
@@ -280,7 +282,7 @@ router.delete('/jobs/:id', async (req: Request, res: Response): Promise<void> =>
  * GET /api/recruiter/jobs
  * Get all jobs created by the recruiter
  */
-router.get('/jobs', async (req: Request, res: Response): Promise<void> => {
+router.get('/jobs', async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const userId = req.user!.userId;
 
@@ -303,7 +305,7 @@ router.get('/jobs', async (req: Request, res: Response): Promise<void> => {
  * GET /api/recruiter/dashboard
  * Get dashboard statistics for recruiter
  */
-router.get('/dashboard', async (req: Request, res: Response): Promise<void> => {
+router.get('/dashboard', async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const userId = req.user!.userId;
 
@@ -317,7 +319,7 @@ router.get('/dashboard', async (req: Request, res: Response): Promise<void> => {
 
     // Get application counts for active jobs
     const { ApplicationModel } = await import('../models/Application');
-    
+
     let totalApplications = 0;
     let submittedCount = 0;
     let reviewedCount = 0;
@@ -326,7 +328,7 @@ router.get('/dashboard', async (req: Request, res: Response): Promise<void> => {
     for (const job of jobs.filter((j) => j.status === 'active')) {
       const applications = await ApplicationModel.findByJobId(job.id);
       totalApplications += applications.length;
-      
+
       applications.forEach((app) => {
         if (app.status === 'submitted') submittedCount++;
         if (app.status === 'reviewed') reviewedCount++;
@@ -362,7 +364,7 @@ router.get('/dashboard', async (req: Request, res: Response): Promise<void> => {
  * GET /api/recruiter/jobs/:id/candidates
  * Get candidates for a job with optional AI ranking
  */
-router.get('/jobs/:id/candidates', async (req: Request, res: Response): Promise<void> => {
+router.get('/jobs/:id/candidates', async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const userId = req.user!.userId;
     const { id: jobId } = req.params;
@@ -407,7 +409,9 @@ router.get('/jobs/:id/candidates', async (req: Request, res: Response): Promise<
       applications.map(async (app) => {
         const user = await UserModel.findById(app.userId);
         const profile = await CandidateProfileModel.findByUserId(app.userId);
-        const resumeVersion = await ResumeVersionModel.findById(app.resumeVersionId);
+        const resumeVersion = app.resumeVersionId
+          ? await ResumeVersionModel.findById(app.userId, app.resumeVersionId)
+          : null;
 
         return {
           applicationId: app.id,
@@ -473,7 +477,7 @@ router.get('/jobs/:id/candidates', async (req: Request, res: Response): Promise<
         } catch (parseError) {
           // If not JSON, parse the text format
           const candidateBlocks = rankingResult.split(/CANDIDATE \d+:/i).filter(Boolean);
-          
+
           rankings = candidateBlocks.map((block, index) => {
             const scoreMatch = block.match(/Score[:\s]+(\d+)\/100/i);
             const rationaleMatch = block.match(/Rationale[:\s]+(.+?)(?=Strength:|$)/is);
@@ -501,7 +505,7 @@ router.get('/jobs/:id/candidates', async (req: Request, res: Response): Promise<
             };
 
             let screeningQuestions: string[] = [];
-            
+
             if (candidate.profile) {
               try {
                 const questionsResult = await generateScreeningQuestions(jobData, {
@@ -562,8 +566,8 @@ router.get('/jobs/:id/candidates', async (req: Request, res: Response): Promise<
 
     // Sort candidates if requested (without AI)
     if (sortBy === 'date') {
-      candidatesWithDetails.sort((a, b) => 
-        new Date(b.appliedAt).getTime() - new Date(a.appliedAt).getTime()
+      candidatesWithDetails.sort(
+        (a, b) => new Date(b.appliedAt).getTime() - new Date(a.appliedAt).getTime()
       );
     } else if (sortBy === 'score' && candidatesWithDetails.some((c) => c.aiScore)) {
       candidatesWithDetails.sort((a, b) => (b.aiScore || 0) - (a.aiScore || 0));

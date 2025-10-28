@@ -1,0 +1,104 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function hasRole(role) {
+      return isAuthenticated() && request.auth.token.role == role;
+    }
+    
+    function isRecruiterOrAdmin() {
+      return hasRole('recruiter') || hasRole('admin');
+    }
+    
+    // Users collection - authenticated users can read any user, but only update their own
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId) || hasRole('admin');
+    }
+    
+    // Candidate profiles - authenticated users can read, only owner can write
+    match /candidateProfiles/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId) || hasRole('admin');
+    }
+    
+    // Recruiter profiles - authenticated users can read, owner/admin can write
+    match /recruiterProfiles/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isOwner(userId) && hasRole('recruiter');
+      allow update: if isOwner(userId) || hasRole('admin');
+      allow delete: if isOwner(userId) || hasRole('admin');
+    }
+    
+    // Organizations - authenticated users can read, recruiters/admins can write
+    match /organizations/{orgId} {
+      allow read: if isAuthenticated();
+      allow create: if isRecruiterOrAdmin();
+      allow update: if isRecruiterOrAdmin();
+      allow delete: if hasRole('admin');
+    }
+    
+    // Jobs - public read access, recruiters can create, only creator can update/delete
+    match /jobs/{jobId} {
+      allow read: if true; // Public read access for job listings
+      allow create: if hasRole('recruiter') && request.resource.data.createdBy == request.auth.uid;
+      allow update: if hasRole('recruiter') && resource.data.createdBy == request.auth.uid;
+      allow delete: if (hasRole('recruiter') && resource.data.createdBy == request.auth.uid) || hasRole('admin');
+    }
+    
+    // Applications - candidates can read their own, recruiters can read for their jobs
+    match /applications/{applicationId} {
+      allow read: if isOwner(resource.data.userId) || 
+        (hasRole('recruiter') && 
+         get(/databases/$(database)/documents/jobs/$(resource.data.jobId)).data.createdBy == request.auth.uid);
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid &&
+        hasRole('candidate');
+      allow update: if (hasRole('recruiter') && 
+        get(/databases/$(database)/documents/jobs/$(resource.data.jobId)).data.createdBy == request.auth.uid) ||
+        hasRole('admin');
+      allow delete: if hasRole('admin');
+    }
+    
+    // Resumes - owner-only access for privacy
+    match /resumes/{resumeId} {
+      allow read: if isOwner(resource.data.userId);
+      allow create: if isOwner(request.resource.data.userId);
+      allow update: if isOwner(resource.data.userId);
+      allow delete: if isOwner(resource.data.userId);
+      
+      // Resume versions subcollection
+      match /versions/{versionId} {
+        allow read: if isOwner(get(/databases/$(database)/documents/resumes/$(resumeId)).data.userId);
+        allow create: if isOwner(get(/databases/$(database)/documents/resumes/$(resumeId)).data.userId);
+        allow update: if isOwner(get(/databases/$(database)/documents/resumes/$(resumeId)).data.userId);
+        allow delete: if isOwner(get(/databases/$(database)/documents/resumes/$(resumeId)).data.userId);
+      }
+    }
+    
+    // Events collection - for analytics and audit logs
+    match /events/{eventId} {
+      allow read: if hasRole('admin');
+      allow create: if isAuthenticated();
+      allow update, delete: if hasRole('admin');
+    }
+    
+    // Metrics cache - for performance optimization
+    match /metricsCache/{metricId} {
+      allow read: if isAuthenticated();
+      allow write: if hasRole('admin');
+    }
+  }
+}

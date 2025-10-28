@@ -81,9 +81,7 @@ export const ErrorFactory = {
     return new AppError(ErrorCode.FORBIDDEN, message, 403);
   },
 
-  invalidCredentials(
-    message: string = 'Invalid email or password'
-  ): AppError {
+  invalidCredentials(message: string = 'Invalid email or password'): AppError {
     return new AppError(ErrorCode.INVALID_CREDENTIALS, message, 401);
   },
 
@@ -104,24 +102,11 @@ export const ErrorFactory = {
   },
 
   alreadyExists(resource: string = 'Resource'): AppError {
-    return new AppError(
-      ErrorCode.ALREADY_EXISTS,
-      `${resource} already exists`,
-      409
-    );
+    return new AppError(ErrorCode.ALREADY_EXISTS, `${resource} already exists`, 409);
   },
 
-  aiServiceError(
-    message: string = 'AI service unavailable',
-    fallback?: any
-  ): AppError {
-    return new AppError(
-      ErrorCode.AI_SERVICE_ERROR,
-      message,
-      503,
-      undefined,
-      fallback
-    );
+  aiServiceError(message: string = 'AI service unavailable', fallback?: any): AppError {
+    return new AppError(ErrorCode.AI_SERVICE_ERROR, message, 503, undefined, fallback);
   },
 
   storageError(message: string = 'Storage service error'): AppError {
@@ -136,18 +121,10 @@ export const ErrorFactory = {
     const message = retryAfter
       ? `Too many requests. Please try again in ${retryAfter} seconds`
       : 'Too many requests. Please try again later';
-    return new AppError(
-      ErrorCode.RATE_LIMIT_EXCEEDED,
-      message,
-      429,
-      { retryAfter }
-    );
+    return new AppError(ErrorCode.RATE_LIMIT_EXCEEDED, message, 429, { retryAfter });
   },
 
-  internalError(
-    message: string = 'An unexpected error occurred',
-    details?: any
-  ): AppError {
+  internalError(message: string = 'An unexpected error occurred', details?: any): AppError {
     return new AppError(
       ErrorCode.INTERNAL_ERROR,
       message,
@@ -170,10 +147,7 @@ export class ErrorLogger {
       .join(' ');
   }
 
-  static logError(
-    error: Error | AppError,
-    context?: Record<string, any>
-  ): void {
+  static logError(error: Error | AppError, context?: Record<string, any>): void {
     const timestamp = new Date().toISOString();
     const contextStr = this.formatContext(context);
 

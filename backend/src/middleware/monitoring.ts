@@ -49,7 +49,7 @@ export function requestLoggerMiddleware(req: Request, res: Response, next: NextF
   // Capture response
   res.on('finish', () => {
     const duration = Date.now() - startTime;
-    
+
     logger.info('Request completed', {
       method: req.method,
       url: req.url,

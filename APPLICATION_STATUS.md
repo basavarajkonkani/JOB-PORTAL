@@ -4,13 +4,13 @@
 
 ### Services Status
 
-| Service | Status | URL | Notes |
-|---------|--------|-----|-------|
-| **Frontend** | ✅ Running | http://localhost:3000 | Next.js application |
-| **Backend** | ✅ Running | http://localhost:3001 | Express API server |
-| **PostgreSQL** | ✅ Running | localhost:5432 | Database with migrations applied |
-| **Redis** | ⚠️ Running | localhost:6379 | Cache service (connection pending) |
-| **AI Service** | ✅ Available | Pollinations API | External service |
+| Service        | Status       | URL                   | Notes                              |
+| -------------- | ------------ | --------------------- | ---------------------------------- |
+| **Frontend**   | ✅ Running   | http://localhost:3000 | Next.js application                |
+| **Backend**    | ✅ Running   | http://localhost:3001 | Express API server                 |
+| **PostgreSQL** | ✅ Running   | localhost:5432        | Database with migrations applied   |
+| **Redis**      | ⚠️ Running   | localhost:6379        | Cache service (connection pending) |
+| **AI Service** | ✅ Available | Pollinations API      | External service                   |
 
 ### Database Setup
 
@@ -22,14 +22,17 @@
 You can use these credentials to test the application:
 
 **Candidate Account:**
+
 - Email: `candidate1@example.com`
 - Password: `password123`
 
 **Recruiter Account:**
+
 - Email: `recruiter1@example.com`
 - Password: `password123`
 
 **Admin Account:**
+
 - Email: `admin@example.com`
 - Password: `password123`
 
@@ -74,6 +77,7 @@ You can use these credentials to test the application:
    - View AI-powered candidate rankings
 
 3. **Run E2E Tests**
+
    ```bash
    cd frontend
    npm run test:e2e
@@ -117,11 +121,13 @@ npm run dev
 ### Health Check
 
 Check application health:
+
 ```bash
 curl http://localhost:3001/health
 ```
 
 Expected response:
+
 ```json
 {
   "status": "healthy",
@@ -138,16 +144,19 @@ Expected response:
 ### Troubleshooting
 
 **Database Connection Issues:**
+
 - Ensure Docker is running
 - Check PostgreSQL container: `docker ps | grep postgres`
 - Restart containers: `docker-compose restart`
 
 **Port Already in Use:**
+
 - Frontend (3000): Check with `lsof -i :3000`
 - Backend (3001): Check with `lsof -i :3001`
 - Kill process: `kill -9 <PID>`
 
 **Migration Errors:**
+
 - Reset database: `docker-compose down -v` (⚠️ deletes all data)
 - Restart containers: `docker-compose up -d`
 - Run migrations: `cd backend && npm run migrate:up`

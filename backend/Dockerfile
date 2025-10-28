@@ -39,7 +39,6 @@ RUN npm ci --only=production && \
 
 # Copy built application from builder
 COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
-COPY --from=builder --chown=nodejs:nodejs /app/src/migrations ./src/migrations
 
 # Switch to non-root user
 USER nodejs

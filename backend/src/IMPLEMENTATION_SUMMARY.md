@@ -90,6 +90,7 @@ All sub-tasks have been successfully implemented:
 ### ✅ Indexes Implemented
 
 **Foreign Key Indexes:**
+
 - All foreign key columns have indexes for join performance
 - candidate_profiles.user_id
 - recruiter_profiles.user_id, org_id
@@ -100,6 +101,7 @@ All sub-tasks have been successfully implemented:
 - events.user_id
 
 **Search Field Indexes:**
+
 - jobs.title - for job title search
 - jobs.location - for location filtering
 - candidate_profiles.skills (GIN) - for skills array search
@@ -107,6 +109,7 @@ All sub-tasks have been successfully implemented:
 - orgs.name - for organization search
 
 **Filter Field Indexes:**
+
 - jobs.level - for experience level filtering
 - jobs.type - for job type filtering
 - jobs.remote - for remote work filtering
@@ -116,6 +119,7 @@ All sub-tasks have been successfully implemented:
 - events.event_type - for analytics filtering
 
 **Composite Indexes:**
+
 - jobs(status, published_at) - for active job listings
 - applications(job_id, user_id) - unique constraint + query optimization
 - resume_versions(resume_id, version) - unique constraint + query optimization
@@ -125,6 +129,7 @@ All sub-tasks have been successfully implemented:
 ### ✅ Seed Data Created
 
 **Development Seed File** (`seeds/seed-dev-data.ts`):
+
 - 3 Organizations: TechCorp Inc, StartupHub, InnovateLabs
 - 6 Users:
   - 3 Candidates (Alice Johnson, Bob Smith, Carol Williams)
@@ -181,24 +186,28 @@ This implementation satisfies all requirements from the task:
 ## Database Features
 
 ### Data Integrity
+
 - Foreign key constraints with appropriate CASCADE/RESTRICT/SET NULL actions
 - CHECK constraints on enum-like fields (role, status, level, type)
 - UNIQUE constraints on email, (job_id, user_id), (resume_id, version)
 - NOT NULL constraints on required fields
 
 ### Performance Optimization
+
 - Comprehensive indexing strategy
 - GIN index for array search (skills)
 - Composite indexes for common query patterns
 - Connection pooling configured in database.ts
 
 ### Scalability
+
 - UUID primary keys for distributed systems
 - JSONB for flexible schema evolution
 - Separate tables for versioning (resume_versions)
 - Metrics cache for expensive analytics queries
 
 ### Developer Experience
+
 - Clear table and column naming (snake_case)
 - Timestamps on all tables
 - Seed data for immediate testing

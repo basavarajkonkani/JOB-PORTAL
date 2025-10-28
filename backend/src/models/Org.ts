@@ -1,4 +1,5 @@
-import pool from '../config/database';
+import { getFirestore } from '../config/firebase';
+import admin from 'firebase-admin';
 
 export interface Org {
   id: string;
@@ -21,143 +22,192 @@ export interface UpdateOrgData {
   logoUrl?: string;
 }
 
+const ORGANIZATIONS_COLLECTION = 'organizations';
+
 export class OrgModel {
   /**
-   * Create a new organization
+   * Create a new organization in Firestore
    */
   static async create(orgData: CreateOrgData): Promise<Org> {
-    const query = `
-      INSERT INTO orgs (name, website, logo_url)
-      VALUES ($1, $2, $3)
-      RETURNING 
-        id,
-        name,
-        website,
-        logo_url as "logoUrl",
-        created_at as "createdAt",
-        updated_at as "updatedAt"
-    `;
+    const firestore = getFirestore();
 
-    const values = [
-      orgData.name,
-      orgData.website || null,
-      orgData.logoUrl || null,
-    ];
+    try {
+      const now = new Date();
+      const orgDoc = {
+        name: orgData.name,
+        website: orgData.website || null,
+        logoUrl: orgData.logoUrl || null,
+        createdAt: admin.firestore.Timestamp.fromDate(now),
+        updatedAt: admin.firestore.Timestamp.fromDate(now),
+      };
 
-    const result = await pool.query(query, values);
-    return result.rows[0];
+      // Create document with auto-generated ID
+      const docRef = await firestore.collection(ORGANIZATIONS_COLLECTION).add(orgDoc);
+
+      return {
+        id: docRef.id,
+        name: orgDoc.name,
+        website: orgDoc.website || undefined,
+        logoUrl: orgDoc.logoUrl || undefined,
+        createdAt: now,
+        updatedAt: now,
+      };
+    } catch (error) {
+      throw new Error(
+        `Failed to create organization: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
   }
 
   /**
-   * Find an organization by ID
+   * Find an organization by ID from Firestore
    */
   static async findById(id: string): Promise<Org | null> {
-    const query = `
-      SELECT 
-        id,
-        name,
-        website,
-        logo_url as "logoUrl",
-        created_at as "createdAt",
-        updated_at as "updatedAt"
-      FROM orgs
-      WHERE id = $1
-    `;
+    const firestore = getFirestore();
 
-    const result = await pool.query(query, [id]);
-    return result.rows[0] || null;
+    try {
+      const docRef = firestore.collection(ORGANIZATIONS_COLLECTION).doc(id);
+      const doc = await docRef.get();
+
+      if (!doc.exists) {
+        return null;
+      }
+
+      const data = doc.data();
+      if (!data) {
+        return null;
+      }
+
+      return {
+        id: doc.id,
+        name: data.name,
+        website: data.website || undefined,
+        logoUrl: data.logoUrl || undefined,
+        createdAt: data.createdAt?.toDate() || new Date(),
+        updatedAt: data.updatedAt?.toDate() || new Date(),
+      };
+    } catch (error) {
+      throw new Error(
+        `Failed to find organization by ID: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
   }
 
   /**
-   * Find an organization by name
+   * Find an organization by name from Firestore
    */
   static async findByName(name: string): Promise<Org | null> {
-    const query = `
-      SELECT 
-        id,
-        name,
-        website,
-        logo_url as "logoUrl",
-        created_at as "createdAt",
-        updated_at as "updatedAt"
-      FROM orgs
-      WHERE name = $1
-    `;
+    const firestore = getFirestore();
 
-    const result = await pool.query(query, [name]);
-    return result.rows[0] || null;
+    try {
+      const querySnapshot = await firestore
+        .collection(ORGANIZATIONS_COLLECTION)
+        .where('name', '==', name)
+        .limit(1)
+        .get();
+
+      if (querySnapshot.empty) {
+        return null;
+      }
+
+      const doc = querySnapshot.docs[0];
+      const data = doc.data();
+
+      return {
+        id: doc.id,
+        name: data.name,
+        website: data.website || undefined,
+        logoUrl: data.logoUrl || undefined,
+        createdAt: data.createdAt?.toDate() || new Date(),
+        updatedAt: data.updatedAt?.toDate() || new Date(),
+      };
+    } catch (error) {
+      throw new Error(
+        `Failed to find organization by name: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
   }
 
   /**
-   * Update an organization
+   * Update an organization in Firestore
    */
   static async update(id: string, orgData: UpdateOrgData): Promise<Org | null> {
-    const updates: string[] = [];
-    const values: any[] = [];
-    let paramCount = 1;
+    const firestore = getFirestore();
 
-    if (orgData.name !== undefined) {
-      updates.push(`name = $${paramCount}`);
-      values.push(orgData.name);
-      paramCount++;
-    }
+    try {
+      const docRef = firestore.collection(ORGANIZATIONS_COLLECTION).doc(id);
+      const doc = await docRef.get();
 
-    if (orgData.website !== undefined) {
-      updates.push(`website = $${paramCount}`);
-      values.push(orgData.website);
-      paramCount++;
-    }
+      if (!doc.exists) {
+        return null;
+      }
 
-    if (orgData.logoUrl !== undefined) {
-      updates.push(`logo_url = $${paramCount}`);
-      values.push(orgData.logoUrl);
-      paramCount++;
-    }
+      // Prepare update data
+      const updateData: any = {
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      };
 
-    if (updates.length === 0) {
+      if (orgData.name !== undefined) {
+        updateData.name = orgData.name;
+      }
+
+      if (orgData.website !== undefined) {
+        updateData.website = orgData.website;
+      }
+
+      if (orgData.logoUrl !== undefined) {
+        updateData.logoUrl = orgData.logoUrl;
+      }
+
+      // Update Firestore document
+      await docRef.update(updateData);
+
+      // Fetch and return updated organization
       return this.findById(id);
+    } catch (error) {
+      throw new Error(
+        `Failed to update organization: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
-
-    updates.push(`updated_at = CURRENT_TIMESTAMP`);
-    values.push(id);
-
-    const query = `
-      UPDATE orgs
-      SET ${updates.join(', ')}
-      WHERE id = $${paramCount}
-      RETURNING 
-        id,
-        name,
-        website,
-        logo_url as "logoUrl",
-        created_at as "createdAt",
-        updated_at as "updatedAt"
-    `;
-
-    const result = await pool.query(query, values);
-    return result.rows[0] || null;
   }
 
   /**
-   * Delete an organization
+   * Delete an organization from Firestore
    */
   static async delete(id: string): Promise<boolean> {
-    const query = 'DELETE FROM orgs WHERE id = $1';
-    const result = await pool.query(query, [id]);
-    return result.rowCount !== null && result.rowCount > 0;
+    const firestore = getFirestore();
+
+    try {
+      await firestore.collection(ORGANIZATIONS_COLLECTION).doc(id).delete();
+      return true;
+    } catch (error) {
+      throw new Error(
+        `Failed to delete organization: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
   }
 
   /**
-   * Get all recruiters for an organization
+   * Get all recruiters for an organization from Firestore
    */
   static async getRecruiters(orgId: string): Promise<string[]> {
-    const query = `
-      SELECT user_id
-      FROM recruiter_profiles
-      WHERE org_id = $1
-    `;
+    const firestore = getFirestore();
 
-    const result = await pool.query(query, [orgId]);
-    return result.rows.map(row => row.user_id);
+    try {
+      const querySnapshot = await firestore
+        .collection('recruiterProfiles')
+        .where('orgId', '==', orgId)
+        .get();
+
+      if (querySnapshot.empty) {
+        return [];
+      }
+
+      return querySnapshot.docs.map((doc) => doc.data().userId);
+    } catch (error) {
+      throw new Error(
+        `Failed to get recruiters for organization: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
   }
 }

@@ -17,7 +17,12 @@ interface AuthContextType {
   refreshToken: string | null;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, name: string, role: 'candidate' | 'recruiter') => Promise<void>;
+  signUp: (
+    email: string,
+    password: string,
+    name: string,
+    role: 'candidate' | 'recruiter'
+  ) => Promise<void>;
   signOut: () => void;
   refreshAccessToken: () => Promise<void>;
 }
@@ -60,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const data = await response.json();
-    
+
     setUser(data.user);
     setAccessToken(data.accessToken);
     setRefreshToken(data.refreshToken);
@@ -88,7 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const data = await response.json();
-    
+
     setUser(data.user);
     setAccessToken(data.accessToken);
     setRefreshToken(data.refreshToken);
@@ -125,7 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const data = await response.json();
-    
+
     setAccessToken(data.accessToken);
     setRefreshToken(data.refreshToken);
 

@@ -90,9 +90,7 @@ export function errorHandler(
   // Handle unexpected errors
   const errorResponse: ErrorResponse = {
     code: ErrorCode.INTERNAL_ERROR,
-    message: process.env.NODE_ENV === 'production' 
-      ? 'An unexpected error occurred' 
-      : err.message,
+    message: process.env.NODE_ENV === 'production' ? 'An unexpected error occurred' : err.message,
     timestamp: new Date().toISOString(),
     path: req.path,
   };
@@ -114,11 +112,7 @@ export function asyncHandler(
 /**
  * 404 Not Found handler
  */
-export function notFoundHandler(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): void {
+export function notFoundHandler(req: Request, res: Response, next: NextFunction): void {
   const errorResponse: ErrorResponse = {
     code: ErrorCode.NOT_FOUND,
     message: `Route ${req.method} ${req.path} not found`,

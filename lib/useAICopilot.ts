@@ -72,22 +72,14 @@ export function useAICopilot() {
   /**
    * Generate fit summary
    */
-  const generateFitSummary = async (
-    jobData: any,
-    candidateProfile: any,
-    token: string
-  ) => {
+  const generateFitSummary = async (jobData: any, candidateProfile: any, token: string) => {
     return callAI('fit-summary', { jobData, candidateProfile }, token);
   };
 
   /**
    * Generate cover letter
    */
-  const generateCoverLetter = async (
-    jobData: any,
-    candidateProfile: any,
-    token: string
-  ) => {
+  const generateCoverLetter = async (jobData: any, candidateProfile: any, token: string) => {
     return callAI('cover-letter', { jobData, candidateProfile }, token);
   };
 
@@ -108,22 +100,14 @@ export function useAICopilot() {
   /**
    * Rank candidates
    */
-  const rankCandidates = async (
-    jobData: any,
-    applications: any[],
-    token: string
-  ) => {
+  const rankCandidates = async (jobData: any, applications: any[], token: string) => {
     return callAI('shortlist', { jobData, applications }, token);
   };
 
   /**
    * Generate screening questions
    */
-  const generateScreeningQuestions = async (
-    jobData: any,
-    candidateProfile: any,
-    token: string
-  ) => {
+  const generateScreeningQuestions = async (jobData: any, candidateProfile: any, token: string) => {
     return callAI('screening-questions', { jobData, candidateProfile }, token);
   };
 

@@ -12,7 +12,8 @@ export interface TokenPair {
 }
 
 const ACCESS_TOKEN_SECRET = process.env.JWT_SECRET || 'access-secret-key-change-in-production';
-const REFRESH_TOKEN_SECRET = process.env.JWT_REFRESH_SECRET || 'refresh-secret-key-change-in-production';
+const REFRESH_TOKEN_SECRET =
+  process.env.JWT_REFRESH_SECRET || 'refresh-secret-key-change-in-production';
 const ACCESS_TOKEN_EXPIRY = process.env.JWT_EXPIRES_IN || '15m'; // 15 minutes
 const REFRESH_TOKEN_EXPIRY = process.env.JWT_REFRESH_EXPIRES_IN || '7d'; // 7 days
 

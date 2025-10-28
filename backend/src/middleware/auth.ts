@@ -33,7 +33,8 @@ export function authenticate(req: Request, res: Response, next: NextFunction): v
     const sessionKey = `session:${token}`;
 
     // Try to get cached session
-    redisClient.get(sessionKey)
+    redisClient
+      .get(sessionKey)
       .then((cachedSession) => {
         if (cachedSession) {
           // Use cached session
@@ -48,7 +49,8 @@ export function authenticate(req: Request, res: Response, next: NextFunction): v
           req.user = payload;
 
           // Cache the session for 30 minutes
-          redisClient.setEx(sessionKey, SESSION_CACHE_TTL, JSON.stringify(payload))
+          redisClient
+            .setEx(sessionKey, SESSION_CACHE_TTL, JSON.stringify(payload))
             .catch((err) => console.error('Failed to cache session:', err));
 
           next();
@@ -60,7 +62,7 @@ export function authenticate(req: Request, res: Response, next: NextFunction): v
             });
             return;
           }
-          
+
           res.status(401).json({
             code: 'UNAUTHORIZED',
             message: 'Invalid token',
@@ -83,7 +85,7 @@ export function authenticate(req: Request, res: Response, next: NextFunction): v
             });
             return;
           }
-          
+
           res.status(401).json({
             code: 'UNAUTHORIZED',
             message: 'Invalid token',

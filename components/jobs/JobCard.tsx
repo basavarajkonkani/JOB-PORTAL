@@ -70,7 +70,7 @@ export default function JobCard({ job }: JobCardProps) {
   const handleShare = async (e: React.MouseEvent) => {
     e.stopPropagation();
     const url = `${window.location.origin}/jobs/${job.id}`;
-    
+
     if (navigator.share) {
       try {
         await navigator.share({
@@ -106,12 +106,7 @@ export default function JobCard({ job }: JobCardProps) {
           </h3>
           <div className="flex flex-wrap gap-2 text-sm text-gray-600">
             <span className="flex items-center">
-              <svg
-                className="w-4 h-4 mr-1"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -123,12 +118,7 @@ export default function JobCard({ job }: JobCardProps) {
             </span>
             <span className="text-gray-400">•</span>
             <span className="flex items-center">
-              <svg
-                className="w-4 h-4 mr-1"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -180,12 +170,7 @@ export default function JobCard({ job }: JobCardProps) {
             className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
             aria-label="Share job"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -197,18 +182,14 @@ export default function JobCard({ job }: JobCardProps) {
         </div>
       </div>
 
-      <p className="text-gray-700 text-sm mb-3 line-clamp-2">
-        {job.description}
-      </p>
+      <p className="text-gray-700 text-sm mb-3 line-clamp-2">{job.description}</p>
 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3 text-sm">
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
             {job.type}
           </span>
-          {compensation && (
-            <span className="text-gray-900 font-medium">{compensation}</span>
-          )}
+          {compensation && <span className="text-gray-900 font-medium">{compensation}</span>}
         </div>
         <button
           onClick={handleCardClick}

@@ -142,7 +142,7 @@ export default function RecruiterProfile() {
           <input
             type="text"
             value={profile.title || ''}
-            onChange={e => setProfile({ ...profile, title: e.target.value })}
+            onChange={(e) => setProfile({ ...profile, title: e.target.value })}
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="e.g., Senior Recruiter, Talent Acquisition Manager"
           />
@@ -154,7 +154,7 @@ export default function RecruiterProfile() {
           <input
             type="text"
             value={profile.orgId || ''}
-            onChange={e => setProfile({ ...profile, orgId: e.target.value })}
+            onChange={(e) => setProfile({ ...profile, orgId: e.target.value })}
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="Enter organization UUID"
           />
@@ -186,11 +186,7 @@ export default function RecruiterProfile() {
               )}
               {org.logoUrl && (
                 <div className="mt-2">
-                  <img
-                    src={org.logoUrl}
-                    alt={org.name}
-                    className="h-12 w-auto object-contain"
-                  />
+                  <img src={org.logoUrl} alt={org.name} className="h-12 w-auto object-contain" />
                 </div>
               )}
             </div>

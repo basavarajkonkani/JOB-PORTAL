@@ -112,10 +112,16 @@ export function validateCandidateProfileData(data: any): ValidationError[] {
           errors.push({ field: `experience[${index}].title`, message: 'Title is required' });
         }
         if (!exp.startDate || typeof exp.startDate !== 'string') {
-          errors.push({ field: `experience[${index}].startDate`, message: 'Start date is required' });
+          errors.push({
+            field: `experience[${index}].startDate`,
+            message: 'Start date is required',
+          });
         }
         if (!exp.description || typeof exp.description !== 'string') {
-          errors.push({ field: `experience[${index}].description`, message: 'Description is required' });
+          errors.push({
+            field: `experience[${index}].description`,
+            message: 'Description is required',
+          });
         }
       });
     }
@@ -127,7 +133,10 @@ export function validateCandidateProfileData(data: any): ValidationError[] {
     } else {
       data.education.forEach((edu: any, index: number) => {
         if (!edu.institution || typeof edu.institution !== 'string') {
-          errors.push({ field: `education[${index}].institution`, message: 'Institution is required' });
+          errors.push({
+            field: `education[${index}].institution`,
+            message: 'Institution is required',
+          });
         }
         if (!edu.degree || typeof edu.degree !== 'string') {
           errors.push({ field: `education[${index}].degree`, message: 'Degree is required' });
@@ -136,7 +145,10 @@ export function validateCandidateProfileData(data: any): ValidationError[] {
           errors.push({ field: `education[${index}].field`, message: 'Field is required' });
         }
         if (!edu.graduationDate || typeof edu.graduationDate !== 'string') {
-          errors.push({ field: `education[${index}].graduationDate`, message: 'Graduation date is required' });
+          errors.push({
+            field: `education[${index}].graduationDate`,
+            message: 'Graduation date is required',
+          });
         }
       });
     }

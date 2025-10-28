@@ -54,9 +54,17 @@ docker-compose -f docker-compose.prod.yml up -d
 echo -e "${GREEN}⏳ Waiting for services to be healthy...${NC}"
 sleep 10
 
-# Run database migrations
-echo -e "${GREEN}🗄️  Running database migrations...${NC}"
-docker-compose -f docker-compose.prod.yml exec -T backend npm run migrate:up
+# Deploy Firebase security rules
+echo -e "${GREEN}🔒 Deploying Firebase security rules...${NC}"
+cd backend
+if command -v firebase &> /dev/null; then
+    firebase use "$ENVIRONMENT"
+    firebase deploy --only firestore:rules,storage:rules,database:rules
+else
+    echo -e "${YELLOW}⚠️  Firebase CLI not found. Skipping security rules deployment.${NC}"
+    echo -e "${YELLOW}   Install with: npm install -g firebase-tools${NC}"
+fi
+cd ..
 
 # Health check
 echo -e "${GREEN}🏥 Running health checks...${NC}"

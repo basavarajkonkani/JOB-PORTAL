@@ -1,0 +1,114 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "presence": {
+      "$userId": {
+        ".read": "auth != null",
+        ".write": "$userId === auth.uid && auth != null",
+        ".validate": "newData.hasChildren(['online', 'lastSeen']) && newData.child('online').isBoolean() && newData.child('lastSeen').isNumber()",
+        "online": {
+          ".validate": "newData.isBoolean()"
+        },
+        "lastSeen": {
+          ".validate": "newData.isNumber() && newData.val() <= now"
+        },
+        "currentPage": {
+          ".validate": "newData.isString() && newData.val().length < 500"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+
+    "notifications": {
+      "$userId": {
+        ".read": "$userId === auth.uid && auth != null",
+        ".write": "($userId === auth.uid || auth.token.role === 'admin' || auth.token.role === 'recruiter') && auth != null",
+        "$notificationId": {
+          ".validate": "newData.hasChildren(['type', 'title', 'message', 'read', 'timestamp']) && newData.child('type').isString() && newData.child('title').isString() && newData.child('message').isString() && newData.child('read').isBoolean() && newData.child('timestamp').isNumber()",
+          "type": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length < 100"
+          },
+          "title": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length < 200"
+          },
+          "message": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length < 1000"
+          },
+          "read": {
+            ".validate": "newData.isBoolean()"
+          },
+          "timestamp": {
+            ".validate": "newData.isNumber() && newData.val() <= now + 60000"
+          },
+          "data": {
+            ".validate": "newData.val() != null"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      }
+    },
+
+    "applicationUpdates": {
+      "$userId": {
+        ".read": "$userId === auth.uid && auth != null",
+        ".write": "(auth.token.role === 'recruiter' || auth.token.role === 'admin') && auth != null",
+        "$applicationId": {
+          ".validate": "newData.hasChildren(['status', 'updatedAt', 'jobTitle']) && newData.child('status').isString() && newData.child('updatedAt').isNumber() && newData.child('jobTitle').isString()",
+          "status": {
+            ".validate": "newData.isString() && (newData.val() === 'pending' || newData.val() === 'reviewing' || newData.val() === 'shortlisted' || newData.val() === 'rejected' || newData.val() === 'accepted')"
+          },
+          "updatedAt": {
+            ".validate": "newData.isNumber() && newData.val() <= now + 60000"
+          },
+          "jobTitle": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length < 500"
+          },
+          "jobId": {
+            ".validate": "newData.isString() && newData.val().length > 0"
+          },
+          "applicationId": {
+            ".validate": "newData.isString() && newData.val().length > 0"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      }
+    },
+
+    "activeRecruiters": {
+      "$jobId": {
+        ".read": "auth != null && (auth.token.role === 'recruiter' || auth.token.role === 'admin')",
+        ".write": "auth != null && (auth.token.role === 'recruiter' || auth.token.role === 'admin')",
+        "$recruiterId": {
+          ".validate": "newData.hasChildren(['name', 'lastActive']) && newData.child('name').isString() && newData.child('lastActive').isNumber()",
+          "name": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length < 200"
+          },
+          "lastActive": {
+            ".validate": "newData.isNumber() && newData.val() <= now + 60000"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      }
+    },
+
+    "typing": {
+      "$conversationId": {
+        ".read": "auth != null",
+        ".write": "auth != null",
+        "$userId": {
+          ".validate": "newData.isBoolean()"
+        }
+      }
+    }
+  }
+}

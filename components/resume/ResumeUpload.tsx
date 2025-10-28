@@ -28,7 +28,7 @@ export default function ResumeUpload({ onUploadSuccess }: ResumeUploadProps) {
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    
+
     const droppedFile = e.dataTransfer.files[0];
     if (droppedFile) {
       validateAndSetFile(droppedFile);
@@ -44,54 +44,60 @@ export default function ResumeUpload({ onUploadSuccess }: ResumeUploadProps) {
 
   const validateAndSetFile = (selectedFile: File) => {
     setError(null);
-    
+
     // Validate file type
-    const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    const allowedTypes = [
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ];
     if (!allowedTypes.includes(selectedFile.type)) {
       setError('Only PDF and DOCX files are allowed');
       return;
     }
-    
+
     // Validate file size (10MB)
     if (selectedFile.size > 10 * 1024 * 1024) {
       setError('File size must be less than 10MB');
       return;
     }
-    
+
     setFile(selectedFile);
   };
 
   const handleUpload = async () => {
     if (!file || !accessToken) return;
-    
+
     setIsUploading(true);
     setError(null);
     setUploadProgress(0);
-    
+
     try {
       const formData = new FormData();
       formData.append('resume', file);
-      
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/candidate/resume/upload`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-        },
-        body: formData,
-      });
-      
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/candidate/resume/upload`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: formData,
+        }
+      );
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to upload resume');
       }
-      
+
       const data = await response.json();
       setUploadProgress(100);
-      
+
       if (onUploadSuccess) {
         onUploadSuccess(data.resume);
       }
-      
+
       // Reset form
       setFile(null);
       setUploadProgress(0);
@@ -111,9 +117,7 @@ export default function ResumeUpload({ onUploadSuccess }: ResumeUploadProps) {
     <div className="w-full max-w-2xl mx-auto">
       <div
         className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-          isDragging
-            ? 'border-blue-500 bg-blue-50'
-            : 'border-gray-300 hover:border-gray-400'
+          isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'
         }`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -175,9 +179,7 @@ export default function ResumeUpload({ onUploadSuccess }: ResumeUploadProps) {
                 </svg>
                 <div className="text-left">
                   <p className="text-sm font-medium text-gray-900">{file.name}</p>
-                  <p className="text-xs text-gray-500">
-                    {(file.size / 1024 / 1024).toFixed(2)} MB
-                  </p>
+                  <p className="text-xs text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                 </div>
               </div>
               <button
@@ -195,7 +197,7 @@ export default function ResumeUpload({ onUploadSuccess }: ResumeUploadProps) {
                 </svg>
               </button>
             </div>
-            
+
             {isUploading && (
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div
@@ -204,7 +206,7 @@ export default function ResumeUpload({ onUploadSuccess }: ResumeUploadProps) {
                 />
               </div>
             )}
-            
+
             <button
               type="button"
               onClick={handleUpload}
@@ -216,7 +218,7 @@ export default function ResumeUpload({ onUploadSuccess }: ResumeUploadProps) {
           </div>
         )}
       </div>
-      
+
       {error && (
         <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
           <p className="text-sm text-red-600">{error}</p>

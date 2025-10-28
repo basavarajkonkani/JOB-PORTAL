@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { JobModel } from '../models/Job';
 import { CandidateProfileModel } from '../models/CandidateProfile';
-import { authenticateOptional } from '../middleware/auth';
+import { authenticateFirebaseOptional, AuthRequest } from '../middleware/firebaseAuth';
 import redisClient from '../config/redis';
 import crypto from 'crypto';
 
@@ -26,14 +26,7 @@ function generateJobSearchCacheKey(filters: any, page: number, limit: number): s
  */
 router.get('/', async (req: Request, res: Response): Promise<void> => {
   try {
-    const {
-      title,
-      level,
-      location,
-      remote,
-      page = '1',
-      limit = '20',
-    } = req.query;
+    const { title, level, location, remote, page = '1', limit = '20' } = req.query;
 
     // Parse pagination parameters
     const pageNum = parseInt(page as string, 10);
@@ -122,48 +115,52 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
  * GET /api/jobs/:id
  * Get job detail with optional user context (public endpoint)
  */
-router.get('/:id', authenticateOptional, async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { id } = req.params;
-    const userId = req.user?.userId;
+router.get(
+  '/:id',
+  authenticateFirebaseOptional,
+  async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const userId = req.user?.userId;
 
-    // Get job
-    const job = await JobModel.findById(id);
+      // Get job
+      const job = await JobModel.findById(id);
 
-    if (!job) {
-      res.status(404).json({
-        code: 'NOT_FOUND',
-        message: 'Job not found',
+      if (!job) {
+        res.status(404).json({
+          code: 'NOT_FOUND',
+          message: 'Job not found',
+        });
+        return;
+      }
+
+      // Only show active jobs publicly (unless user is the creator)
+      if (job.status !== 'active' && job.createdBy !== userId) {
+        res.status(404).json({
+          code: 'NOT_FOUND',
+          message: 'Job not found',
+        });
+        return;
+      }
+
+      // If user is authenticated and is a candidate, include profile context
+      let candidateProfile = null;
+      if (userId) {
+        candidateProfile = await CandidateProfileModel.findByUserId(userId);
+      }
+
+      res.status(200).json({
+        job,
+        candidateProfile: candidateProfile || undefined,
       });
-      return;
-    }
-
-    // Only show active jobs publicly (unless user is the creator)
-    if (job.status !== 'active' && job.createdBy !== userId) {
-      res.status(404).json({
-        code: 'NOT_FOUND',
-        message: 'Job not found',
+    } catch (error) {
+      console.error('Get job detail error:', error);
+      res.status(500).json({
+        code: 'INTERNAL_ERROR',
+        message: 'Failed to retrieve job',
       });
-      return;
     }
-
-    // If user is authenticated and is a candidate, include profile context
-    let candidateProfile = null;
-    if (userId) {
-      candidateProfile = await CandidateProfileModel.findByUserId(userId);
-    }
-
-    res.status(200).json({
-      job,
-      candidateProfile: candidateProfile || undefined,
-    });
-  } catch (error) {
-    console.error('Get job detail error:', error);
-    res.status(500).json({
-      code: 'INTERNAL_ERROR',
-      message: 'Failed to retrieve job',
-    });
   }
-});
+);
 
 export default router;

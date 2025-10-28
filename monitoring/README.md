@@ -30,6 +30,7 @@ The monitoring stack includes:
 Logs are managed by Winston and configured in `backend/src/utils/logger.ts`.
 
 **Log Levels:**
+
 - `error`: Error messages
 - `warn`: Warning messages
 - `info`: Informational messages (default)
@@ -37,12 +38,14 @@ Logs are managed by Winston and configured in `backend/src/utils/logger.ts`.
 - `verbose`: Verbose messages
 
 **Log Outputs:**
+
 - Console (always enabled)
 - File rotation (production only):
   - `logs/error-YYYY-MM-DD.log`: Error logs only
   - `logs/combined-YYYY-MM-DD.log`: All logs
 
 **Configuration via Environment Variables:**
+
 ```bash
 LOG_LEVEL=info              # Set log level
 LOG_DIR=logs                # Set log directory
@@ -71,6 +74,7 @@ logger.info('API request', {
 ### Log Rotation
 
 Logs are automatically rotated daily with the following settings:
+
 - Max file size: 20MB
 - Retention: 14 days
 - Compression: Enabled (gzip)
@@ -78,6 +82,7 @@ Logs are automatically rotated daily with the following settings:
 ### Viewing Logs
 
 **Development:**
+
 ```bash
 # View all logs
 npm run dev
@@ -90,6 +95,7 @@ tail -f logs/error-2024-01-15.log
 ```
 
 **Production (Docker):**
+
 ```bash
 # View container logs
 docker-compose -f docker-compose.prod.yml logs -f backend
@@ -108,16 +114,19 @@ docker-compose -f docker-compose.prod.yml logs -f
 Sentry is configured in `backend/src/config/sentry.ts`.
 
 **1. Create Sentry Account:**
+
 - Sign up at https://sentry.io
 - Create a new project for Node.js
 - Copy the DSN
 
 **2. Configure Environment Variable:**
+
 ```bash
 SENTRY_DSN=https://your-dsn@sentry.io/project-id
 ```
 
 **3. Sentry Features:**
+
 - Automatic error capture
 - Performance monitoring (10% sample rate in production)
 - Profiling (10% sample rate in production)
@@ -125,6 +134,7 @@ SENTRY_DSN=https://your-dsn@sentry.io/project-id
 - Breadcrumbs for debugging
 
 **4. Manual Error Capture:**
+
 ```typescript
 import { Sentry } from './config/sentry';
 
@@ -141,6 +151,7 @@ try {
 ```
 
 **5. Custom Context:**
+
 ```typescript
 Sentry.setUser({ id: '123', email: 'user@example.com' });
 Sentry.setTag('feature', 'job_search');
@@ -150,6 +161,7 @@ Sentry.setContext('job', { id: '456', title: 'Software Engineer' });
 ### Privacy and Security
 
 Sentry is configured to filter sensitive data:
+
 - Authorization headers removed
 - Cookie headers removed
 - Password fields removed
@@ -162,21 +174,25 @@ Sentry is configured to filter sensitive data:
 The monitoring service (`backend/src/services/monitoringService.ts`) tracks:
 
 **1. API Performance:**
+
 - Response times by endpoint
 - Request rates
 - Status code distribution
 - Slow request detection (>1s)
 
 **2. AI Service Usage:**
+
 - Operation duration
 - Success/failure rates
 - Operation types
 
 **3. Database Performance:**
+
 - Query execution times
 - Connection pool status
 
 **4. Cache Performance:**
+
 - Hit/miss rates
 - Operation types
 
@@ -185,6 +201,7 @@ The monitoring service (`backend/src/services/monitoringService.ts`) tracks:
 **Endpoint:** `GET /health`
 
 **Response:**
+
 ```json
 {
   "status": "healthy",
@@ -199,10 +216,12 @@ The monitoring service (`backend/src/services/monitoringService.ts`) tracks:
 ```
 
 **Status Codes:**
+
 - `200`: Healthy or degraded
 - `503`: Unhealthy
 
 **Status Values:**
+
 - `healthy`: All checks passing
 - `degraded`: Some checks failing
 - `unhealthy`: All checks failing
@@ -242,17 +261,20 @@ monitoringService.recordError(error, { userId: '123' });
 Configure external monitoring using `monitoring/uptime-config.yml`.
 
 **Recommended Services:**
+
 - **UptimeRobot**: Free tier available, easy setup
 - **Pingdom**: Advanced features, detailed reports
 - **StatusCake**: Free tier, multiple check locations
 - **Datadog Synthetics**: Integrated with APM
 
 **Endpoints to Monitor:**
+
 - `GET /health`: Backend health check
 - `GET /`: Frontend homepage
 - `GET /api/jobs`: API functionality
 
 **Configuration:**
+
 1. Create account with monitoring service
 2. Add HTTP monitors for each endpoint
 3. Set check interval (60 seconds recommended)
@@ -262,6 +284,7 @@ Configure external monitoring using `monitoring/uptime-config.yml`.
 ### Self-Hosted Monitoring
 
 For self-hosted monitoring, consider:
+
 - **Uptime Kuma**: Simple, Docker-based
 - **Prometheus + Alertmanager**: Advanced, scalable
 - **Grafana Cloud**: Managed Prometheus
@@ -271,21 +294,25 @@ For self-hosted monitoring, consider:
 ### Available Metrics
 
 **API Metrics:**
+
 - `api.response_time`: Response time in milliseconds
   - Tags: `endpoint`, `method`, `status`
 - `api.requests`: Request count
   - Tags: `endpoint`, `method`, `status`
 
 **AI Metrics:**
+
 - `ai.operation`: AI operation duration
   - Tags: `operation`, `success`
 
 **Database Metrics:**
+
 - `database.query_time`: Query execution time
   - Tags: `query` (truncated)
 - `database.connections`: Active connections
 
 **Cache Metrics:**
+
 - `cache.operation`: Cache operations
   - Tags: `operation` (hit/miss/set), `key_prefix`
 
@@ -294,6 +321,7 @@ For self-hosted monitoring, consider:
 Metrics are sent to Sentry and can be queried in the Sentry dashboard.
 
 **Example Queries:**
+
 - Average response time: `avg(api.response_time)`
 - Error rate: `rate(api.response_time{status=~"5.."})`
 - Cache hit rate: `cache.operation{operation="hit"} / cache.operation`
@@ -336,6 +364,7 @@ Alerts are configured in `monitoring/dashboard-config.json`.
 Configure alert channels in your monitoring service:
 
 **Email:**
+
 ```yaml
 alerts:
   - type: email
@@ -344,18 +373,20 @@ alerts:
 ```
 
 **Slack:**
+
 ```yaml
 alerts:
   - type: slack
-    webhook_url: "${SLACK_WEBHOOK_URL}"
-    channel: "#alerts"
+    webhook_url: '${SLACK_WEBHOOK_URL}'
+    channel: '#alerts'
 ```
 
 **PagerDuty:**
+
 ```yaml
 alerts:
   - type: pagerduty
-    integration_key: "${PAGERDUTY_KEY}"
+    integration_key: '${PAGERDUTY_KEY}'
 ```
 
 ## Dashboards
@@ -365,6 +396,7 @@ alerts:
 A sample dashboard configuration is provided in `monitoring/dashboard-config.json`.
 
 **Dashboard Panels:**
+
 1. System Health: Overall status and uptime
 2. API Performance: Response times and request rates
 3. Error Rate: 4xx and 5xx errors
@@ -377,18 +409,21 @@ A sample dashboard configuration is provided in `monitoring/dashboard-config.jso
 ### Creating Dashboards
 
 **Sentry:**
+
 1. Go to Dashboards in Sentry
 2. Create new dashboard
 3. Add widgets for each metric
 4. Configure time ranges and aggregations
 
 **Grafana:**
+
 1. Install Grafana
 2. Add Prometheus data source
 3. Import dashboard from `monitoring/dashboard-config.json`
 4. Customize as needed
 
 **Datadog:**
+
 1. Create new dashboard
 2. Add timeseries widgets
 3. Configure metrics and tags
@@ -475,6 +510,7 @@ redis-cli info memory
 ## Support
 
 For monitoring issues:
+
 1. Check application logs
 2. Review Sentry errors
 3. Check health endpoint

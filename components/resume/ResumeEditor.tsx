@@ -57,24 +57,24 @@ export default function ResumeEditor({ resumeId, onSave }: ResumeEditorProps) {
 
   const loadVersions = async () => {
     if (!accessToken) return;
-    
+
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/candidate/resumes`, {
         headers: {
-          'Authorization': `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to load resume versions');
       }
-      
+
       const data = await response.json();
       const resume = data.resumes.find((r: any) => r.id === resumeId);
-      
+
       if (resume && resume.versions) {
         setVersions(resume.versions);
         if (resume.versions.length > 0) {
@@ -91,25 +91,28 @@ export default function ResumeEditor({ resumeId, onSave }: ResumeEditorProps) {
 
   const handleParse = async () => {
     if (!accessToken) return;
-    
+
     setIsParsing(true);
     setError(null);
-    
+
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/candidate/resume/parse`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ resumeId }),
-      });
-      
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/candidate/resume/parse`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ resumeId }),
+        }
+      );
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to parse resume');
       }
-      
+
       const data = await response.json();
       await loadVersions();
     } catch (err) {

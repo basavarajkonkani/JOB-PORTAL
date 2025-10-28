@@ -65,9 +65,7 @@ export default function MyPage() {
 
   return (
     <div>
-      <button onClick={handleGenerateFitSummary}>
-        Analyze Job Fit
-      </button>
+      <button onClick={handleGenerateFitSummary}>Analyze Job Fit</button>
 
       <AICopilotPanel
         isOpen={copilot.isOpen}
@@ -97,12 +95,12 @@ All AI methods return a response with this structure:
 
 ```typescript
 interface AICopilotResponse {
-  summary: string;           // Brief summary of the result
-  items?: string[] | null;   // Detailed items (expandable)
+  summary: string; // Brief summary of the result
+  items?: string[] | null; // Detailed items (expandable)
   actions?: Action[] | null; // Available actions
-  imageUrl?: string;         // Generated image URL (for image endpoint)
-  error?: string;            // Error message if failed
-  fallback?: string;         // Fallback suggestion on error
+  imageUrl?: string; // Generated image URL (for image endpoint)
+  error?: string; // Error message if failed
+  fallback?: string; // Fallback suggestion on error
 }
 ```
 

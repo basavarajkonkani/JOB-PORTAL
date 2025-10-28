@@ -31,7 +31,7 @@ export default function SignIn() {
     <div className="w-full max-w-md mx-auto p-6">
       <div className="bg-white rounded-lg shadow-md p-8">
         <h2 className="text-2xl font-bold text-gray-900 mb-6">Sign In</h2>
-        
+
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
             <p className="text-sm text-red-600">{error}</p>

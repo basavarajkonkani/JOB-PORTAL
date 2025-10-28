@@ -1,0 +1,115 @@
+rules_version = '2';
+
+// Firebase Storage Security Rules for AI Job Portal
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+    
+    function hasRole(role) {
+      return request.auth != null && request.auth.token.role == role;
+    }
+    
+    function isValidFileSize(maxSizeMB) {
+      return request.resource.size < maxSizeMB * 1024 * 1024;
+    }
+    
+    function isValidImageType() {
+      return request.resource.contentType.matches('image/.*');
+    }
+    
+    function isValidResumeType() {
+      return request.resource.contentType.matches('application/pdf') ||
+             request.resource.contentType.matches('application/msword') ||
+             request.resource.contentType.matches('application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    }
+    
+    // Resume files - only owner can upload and access
+    // Path: resumes/{userId}/{fileName}
+    match /resumes/{userId}/{fileName} {
+      // Owner can read their own resumes
+      allow read: if isOwner(userId);
+      
+      // Owner can upload resumes (max 10MB, valid file types)
+      allow create: if isOwner(userId) && 
+                      isValidResumeType() && 
+                      isValidFileSize(10);
+      
+      // Owner can update their resumes
+      allow update: if isOwner(userId) && 
+                      isValidResumeType() && 
+                      isValidFileSize(10);
+      
+      // Owner can delete their resumes
+      allow delete: if isOwner(userId);
+    }
+    
+    // Avatar/profile images - owner can upload, authenticated users can read
+    // Path: avatars/{userId}/{fileName}
+    match /avatars/{userId}/{fileName} {
+      // Any authenticated user can read avatars (for displaying profiles)
+      allow read: if isAuthenticated();
+      
+      // Owner can upload avatars (max 5MB, images only)
+      allow create: if isOwner(userId) && 
+                      isValidImageType() && 
+                      isValidFileSize(5);
+      
+      // Owner can update their avatars
+      allow update: if isOwner(userId) && 
+                      isValidImageType() && 
+                      isValidFileSize(5);
+      
+      // Owner can delete their avatars
+      allow delete: if isOwner(userId);
+    }
+    
+    // Organization logos - recruiters can upload, public read access
+    // Path: organizations/{orgId}/{fileName}
+    match /organizations/{orgId}/{fileName} {
+      // Public read access for organization logos
+      allow read: if true;
+      
+      // Recruiters and admins can upload logos (max 5MB, images only)
+      allow create: if (hasRole('recruiter') || hasRole('admin')) && 
+                      isValidImageType() && 
+                      isValidFileSize(5);
+      
+      // Recruiters and admins can update logos
+      allow update: if (hasRole('recruiter') || hasRole('admin')) && 
+                      isValidImageType() && 
+                      isValidFileSize(5);
+      
+      // Admins can delete logos
+      allow delete: if hasRole('admin');
+    }
+    
+    // Job attachments - recruiters can upload, authenticated users can read
+    // Path: jobs/{jobId}/{fileName}
+    match /jobs/{jobId}/{fileName} {
+      // Authenticated users can read job attachments
+      allow read: if isAuthenticated();
+      
+      // Recruiters can upload job attachments (max 10MB)
+      allow create: if hasRole('recruiter') && isValidFileSize(10);
+      
+      // Recruiters can update job attachments
+      allow update: if hasRole('recruiter') && isValidFileSize(10);
+      
+      // Recruiters and admins can delete job attachments
+      allow delete: if hasRole('recruiter') || hasRole('admin');
+    }
+    
+    // Deny all other paths by default
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,4 +1,5 @@
-import pool from '../config/database';
+import { firestore } from '../config/firebase';
+import { Timestamp } from 'firebase-admin/firestore';
 
 export interface Event {
   id: string;
@@ -15,83 +16,87 @@ export interface EventInput {
 }
 
 export class EventModel {
+  private static collection = firestore.collection('events');
+
   static async create(eventData: EventInput): Promise<Event> {
     const { userId, eventType, properties = {} } = eventData;
 
-    const result = await pool.query(
-      `INSERT INTO events (user_id, event_type, properties)
-       VALUES ($1, $2, $3)
-       RETURNING id, user_id as "userId", event_type as "eventType", properties, created_at as "createdAt"`,
-      [userId || null, eventType, JSON.stringify(properties)]
-    );
+    const docRef = await this.collection.add({
+      userId: userId || null,
+      eventType,
+      properties,
+      createdAt: Timestamp.now(),
+    });
 
-    return result.rows[0];
+    const doc = await docRef.get();
+    const data = doc.data()!;
+
+    return {
+      id: doc.id,
+      userId: data.userId,
+      eventType: data.eventType,
+      properties: data.properties,
+      createdAt: data.createdAt.toDate(),
+    };
   }
 
-  static async findByType(
-    eventType: string,
-    startDate?: Date,
-    endDate?: Date
-  ): Promise<Event[]> {
-    let query = `
-      SELECT id, user_id as "userId", event_type as "eventType", properties, created_at as "createdAt"
-      FROM events
-      WHERE event_type = $1
-    `;
-    const params: any[] = [eventType];
+  static async findByType(eventType: string, startDate?: Date, endDate?: Date): Promise<Event[]> {
+    let query = this.collection.where('eventType', '==', eventType);
 
     if (startDate) {
-      params.push(startDate);
-      query += ` AND created_at >= $${params.length}`;
+      query = query.where('createdAt', '>=', Timestamp.fromDate(startDate));
     }
 
     if (endDate) {
-      params.push(endDate);
-      query += ` AND created_at <= $${params.length}`;
+      query = query.where('createdAt', '<=', Timestamp.fromDate(endDate));
     }
 
-    query += ' ORDER BY created_at DESC';
+    const snapshot = await query.orderBy('createdAt', 'desc').get();
 
-    const result = await pool.query(query, params);
-    return result.rows;
+    return snapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        userId: data.userId,
+        eventType: data.eventType,
+        properties: data.properties,
+        createdAt: data.createdAt.toDate(),
+      };
+    });
   }
 
-  static async findByUserId(
-    userId: string,
-    limit: number = 100
-  ): Promise<Event[]> {
-    const result = await pool.query(
-      `SELECT id, user_id as "userId", event_type as "eventType", properties, created_at as "createdAt"
-       FROM events
-       WHERE user_id = $1
-       ORDER BY created_at DESC
-       LIMIT $2`,
-      [userId, limit]
-    );
+  static async findByUserId(userId: string, limit: number = 100): Promise<Event[]> {
+    const snapshot = await this.collection
+      .where('userId', '==', userId)
+      .orderBy('createdAt', 'desc')
+      .limit(limit)
+      .get();
 
-    return result.rows;
+    return snapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        userId: data.userId,
+        eventType: data.eventType,
+        properties: data.properties,
+        createdAt: data.createdAt.toDate(),
+      };
+    });
   }
 
-  static async countByType(
-    eventType: string,
-    startDate?: Date,
-    endDate?: Date
-  ): Promise<number> {
-    let query = 'SELECT COUNT(*) FROM events WHERE event_type = $1';
-    const params: any[] = [eventType];
+  static async countByType(eventType: string, startDate?: Date, endDate?: Date): Promise<number> {
+    let query = this.collection.where('eventType', '==', eventType);
 
     if (startDate) {
-      params.push(startDate);
-      query += ` AND created_at >= $${params.length}`;
+      query = query.where('createdAt', '>=', Timestamp.fromDate(startDate));
     }
 
     if (endDate) {
-      params.push(endDate);
-      query += ` AND created_at <= $${params.length}`;
+      query = query.where('createdAt', '<=', Timestamp.fromDate(endDate));
     }
 
-    const result = await pool.query(query, params);
-    return parseInt(result.rows[0].count);
+    const snapshot = await query.count().get();
+    return snapshot.data().count;
   }
 
   static async countUniqueUsers(
@@ -99,21 +104,18 @@ export class EventModel {
     startDate?: Date,
     endDate?: Date
   ): Promise<number> {
-    let query =
-      'SELECT COUNT(DISTINCT user_id) FROM events WHERE event_type = $1 AND user_id IS NOT NULL';
-    const params: any[] = [eventType];
+    let query = this.collection.where('eventType', '==', eventType).where('userId', '!=', null);
 
     if (startDate) {
-      params.push(startDate);
-      query += ` AND created_at >= $${params.length}`;
+      query = query.where('createdAt', '>=', Timestamp.fromDate(startDate));
     }
 
     if (endDate) {
-      params.push(endDate);
-      query += ` AND created_at <= $${params.length}`;
+      query = query.where('createdAt', '<=', Timestamp.fromDate(endDate));
     }
 
-    const result = await pool.query(query, params);
-    return parseInt(result.rows[0].count);
+    const snapshot = await query.get();
+    const uniqueUsers = new Set(snapshot.docs.map((doc) => doc.data().userId));
+    return uniqueUsers.size;
   }
 }

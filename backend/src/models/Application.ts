@@ -1,4 +1,5 @@
-import pool from '../config/database';
+import { firestore } from '../config/firebase';
+import { Timestamp } from 'firebase-admin/firestore';
 
 export interface Application {
   id: string;
@@ -41,197 +42,240 @@ export interface ApplicationWithDetails extends Application {
 }
 
 export class ApplicationModel {
+  private static collection = firestore.collection('applications');
+
   /**
    * Create a new application
    */
   static async create(applicationData: CreateApplicationData): Promise<Application> {
-    const query = `
-      INSERT INTO applications (
-        job_id, user_id, resume_version_id, cover_letter, status, notes, ai_score, ai_rationale
-      )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-      RETURNING 
-        id, job_id as "jobId", user_id as "userId", 
-        resume_version_id as "resumeVersionId", cover_letter as "coverLetter",
-        status, notes, ai_score as "aiScore", ai_rationale as "aiRationale",
-        created_at as "createdAt", updated_at as "updatedAt"
-    `;
+    const now = Timestamp.now();
 
-    const values = [
-      applicationData.jobId,
-      applicationData.userId,
-      applicationData.resumeVersionId,
-      applicationData.coverLetter || '',
-      applicationData.status || 'submitted',
-      applicationData.notes || '',
-      applicationData.aiScore || null,
-      applicationData.aiRationale || null,
-    ];
+    const applicationDoc = {
+      jobId: applicationData.jobId,
+      userId: applicationData.userId,
+      resumeVersionId: applicationData.resumeVersionId,
+      coverLetter: applicationData.coverLetter || '',
+      status: applicationData.status || 'submitted',
+      notes: applicationData.notes || '',
+      aiScore: applicationData.aiScore !== undefined ? applicationData.aiScore : null,
+      aiRationale: applicationData.aiRationale !== undefined ? applicationData.aiRationale : null,
+      createdAt: now,
+      updatedAt: now,
+    };
 
-    const result = await pool.query(query, values);
-    return result.rows[0];
+    const docRef = await this.collection.add(applicationDoc);
+
+    return {
+      id: docRef.id,
+      jobId: applicationDoc.jobId,
+      userId: applicationDoc.userId,
+      resumeVersionId: applicationDoc.resumeVersionId,
+      coverLetter: applicationDoc.coverLetter,
+      status: applicationDoc.status as Application['status'],
+      notes: applicationDoc.notes,
+      aiScore: applicationDoc.aiScore !== null ? applicationDoc.aiScore : undefined,
+      aiRationale: applicationDoc.aiRationale !== null ? applicationDoc.aiRationale : undefined,
+      createdAt: applicationDoc.createdAt.toDate(),
+      updatedAt: applicationDoc.updatedAt.toDate(),
+    };
   }
 
   /**
    * Find an application by ID
    */
   static async findById(id: string): Promise<Application | null> {
-    const query = `
-      SELECT 
-        id, job_id as "jobId", user_id as "userId", 
-        resume_version_id as "resumeVersionId", cover_letter as "coverLetter",
-        status, notes, ai_score as "aiScore", ai_rationale as "aiRationale",
-        created_at as "createdAt", updated_at as "updatedAt"
-      FROM applications
-      WHERE id = $1
-    `;
+    const doc = await this.collection.doc(id).get();
 
-    const result = await pool.query(query, [id]);
-    return result.rows[0] || null;
+    if (!doc.exists) {
+      return null;
+    }
+
+    const data = doc.data()!;
+    return {
+      id: doc.id,
+      jobId: data.jobId,
+      userId: data.userId,
+      resumeVersionId: data.resumeVersionId,
+      coverLetter: data.coverLetter,
+      status: data.status,
+      notes: data.notes,
+      aiScore: data.aiScore !== null ? data.aiScore : undefined,
+      aiRationale: data.aiRationale !== null ? data.aiRationale : undefined,
+      createdAt: data.createdAt.toDate(),
+      updatedAt: data.updatedAt.toDate(),
+    };
   }
 
   /**
-   * Find applications by user ID with optimized JOIN query
-   * Uses composite index on (user_id, created_at) for better performance
+   * Find applications by user ID with optimized query
+   * Uses composite index on (userId, createdAt) for better performance
    */
   static async findByUserId(userId: string): Promise<ApplicationWithDetails[]> {
-    const query = `
-      SELECT 
-        a.id, a.job_id as "jobId", a.user_id as "userId", 
-        a.resume_version_id as "resumeVersionId", a.cover_letter as "coverLetter",
-        a.status, a.notes, a.ai_score as "aiScore", a.ai_rationale as "aiRationale",
-        a.created_at as "createdAt", a.updated_at as "updatedAt",
-        j.title as "jobTitle", j.location as "jobLocation", j.type as "jobType",
-        o.name as "orgName"
-      FROM applications a
-      INNER JOIN jobs j ON a.job_id = j.id
-      INNER JOIN orgs o ON j.org_id = o.id
-      WHERE a.user_id = $1
-      ORDER BY a.created_at DESC
-      LIMIT 100
-    `;
+    const snapshot = await this.collection
+      .where('userId', '==', userId)
+      .orderBy('createdAt', 'desc')
+      .limit(100)
+      .get();
 
-    const result = await pool.query(query, [userId]);
-    return result.rows;
+    if (snapshot.empty) {
+      return [];
+    }
+
+    // Fetch job details for each application
+    const applications: ApplicationWithDetails[] = [];
+
+    for (const doc of snapshot.docs) {
+      const data = doc.data();
+      const application: ApplicationWithDetails = {
+        id: doc.id,
+        jobId: data.jobId,
+        userId: data.userId,
+        resumeVersionId: data.resumeVersionId,
+        coverLetter: data.coverLetter,
+        status: data.status,
+        notes: data.notes,
+        aiScore: data.aiScore !== null ? data.aiScore : undefined,
+        aiRationale: data.aiRationale !== null ? data.aiRationale : undefined,
+        createdAt: data.createdAt.toDate(),
+        updatedAt: data.updatedAt.toDate(),
+      };
+
+      // Fetch job details
+      try {
+        const jobDoc = await firestore.collection('jobs').doc(data.jobId).get();
+        if (jobDoc.exists) {
+          const jobData = jobDoc.data()!;
+          application.jobTitle = jobData.title;
+          application.jobLocation = jobData.location;
+          application.jobType = jobData.type;
+
+          // Fetch organization details
+          if (jobData.orgId) {
+            const orgDoc = await firestore.collection('organizations').doc(jobData.orgId).get();
+            if (orgDoc.exists) {
+              application.orgName = orgDoc.data()!.name;
+            }
+          }
+        }
+      } catch (error) {
+        console.error(`Error fetching job details for application ${doc.id}:`, error);
+      }
+
+      applications.push(application);
+    }
+
+    return applications;
   }
 
   /**
    * Find applications by job ID
    */
   static async findByJobId(jobId: string): Promise<Application[]> {
-    const query = `
-      SELECT 
-        id, job_id as "jobId", user_id as "userId", 
-        resume_version_id as "resumeVersionId", cover_letter as "coverLetter",
-        status, notes, ai_score as "aiScore", ai_rationale as "aiRationale",
-        created_at as "createdAt", updated_at as "updatedAt"
-      FROM applications
-      WHERE job_id = $1
-      ORDER BY created_at DESC
-    `;
+    const snapshot = await this.collection
+      .where('jobId', '==', jobId)
+      .orderBy('createdAt', 'desc')
+      .get();
 
-    const result = await pool.query(query, [jobId]);
-    return result.rows;
+    if (snapshot.empty) {
+      return [];
+    }
+
+    return snapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        jobId: data.jobId,
+        userId: data.userId,
+        resumeVersionId: data.resumeVersionId,
+        coverLetter: data.coverLetter,
+        status: data.status,
+        notes: data.notes,
+        aiScore: data.aiScore !== null ? data.aiScore : undefined,
+        aiRationale: data.aiRationale !== null ? data.aiRationale : undefined,
+        createdAt: data.createdAt.toDate(),
+        updatedAt: data.updatedAt.toDate(),
+      };
+    });
   }
 
   /**
    * Check if user has already applied to a job
    */
   static async existsByJobAndUser(jobId: string, userId: string): Promise<boolean> {
-    const query = `
-      SELECT 1 FROM applications
-      WHERE job_id = $1 AND user_id = $2
-    `;
+    const snapshot = await this.collection
+      .where('jobId', '==', jobId)
+      .where('userId', '==', userId)
+      .limit(1)
+      .get();
 
-    const result = await pool.query(query, [jobId, userId]);
-    return result.rows.length > 0;
+    return !snapshot.empty;
   }
 
   /**
    * Update an application
    */
-  static async update(id: string, applicationData: UpdateApplicationData): Promise<Application | null> {
-    const updates: string[] = [];
-    const values: any[] = [];
-    let paramCount = 1;
+  static async update(
+    id: string,
+    applicationData: UpdateApplicationData
+  ): Promise<Application | null> {
+    const updateData: any = {
+      updatedAt: Timestamp.now(),
+    };
 
     if (applicationData.coverLetter !== undefined) {
-      updates.push(`cover_letter = $${paramCount}`);
-      values.push(applicationData.coverLetter);
-      paramCount++;
+      updateData.coverLetter = applicationData.coverLetter;
     }
 
     if (applicationData.status !== undefined) {
-      updates.push(`status = $${paramCount}`);
-      values.push(applicationData.status);
-      paramCount++;
+      updateData.status = applicationData.status;
     }
 
     if (applicationData.notes !== undefined) {
-      updates.push(`notes = $${paramCount}`);
-      values.push(applicationData.notes);
-      paramCount++;
+      updateData.notes = applicationData.notes;
     }
 
     if (applicationData.aiScore !== undefined) {
-      updates.push(`ai_score = $${paramCount}`);
-      values.push(applicationData.aiScore);
-      paramCount++;
+      updateData.aiScore = applicationData.aiScore;
     }
 
     if (applicationData.aiRationale !== undefined) {
-      updates.push(`ai_rationale = $${paramCount}`);
-      values.push(applicationData.aiRationale);
-      paramCount++;
+      updateData.aiRationale = applicationData.aiRationale;
     }
 
-    if (updates.length === 0) {
+    // If only updatedAt is being set, return current document
+    if (Object.keys(updateData).length === 1) {
       return this.findById(id);
     }
 
-    updates.push(`updated_at = CURRENT_TIMESTAMP`);
-    values.push(id);
-
-    const query = `
-      UPDATE applications
-      SET ${updates.join(', ')}
-      WHERE id = $${paramCount}
-      RETURNING 
-        id, job_id as "jobId", user_id as "userId", 
-        resume_version_id as "resumeVersionId", cover_letter as "coverLetter",
-        status, notes, ai_score as "aiScore", ai_rationale as "aiRationale",
-        created_at as "createdAt", updated_at as "updatedAt"
-    `;
-
-    const result = await pool.query(query, values);
-    return result.rows[0] || null;
+    await this.collection.doc(id).update(updateData);
+    return this.findById(id);
   }
 
   /**
    * Delete an application
    */
   static async delete(id: string): Promise<boolean> {
-    const query = 'DELETE FROM applications WHERE id = $1';
-    const result = await pool.query(query, [id]);
-    return result.rowCount !== null && result.rowCount > 0;
+    try {
+      await this.collection.doc(id).delete();
+      return true;
+    } catch (error) {
+      console.error(`Error deleting application ${id}:`, error);
+      return false;
+    }
   }
 
   /**
    * Get application count by status for a user
    */
   static async getStatusCountsByUserId(userId: string): Promise<Record<string, number>> {
-    const query = `
-      SELECT status, COUNT(*) as count
-      FROM applications
-      WHERE user_id = $1
-      GROUP BY status
-    `;
+    const snapshot = await this.collection.where('userId', '==', userId).get();
 
-    const result = await pool.query(query, [userId]);
     const counts: Record<string, number> = {};
-    
-    result.rows.forEach((row) => {
-      counts[row.status] = parseInt(row.count, 10);
+
+    snapshot.docs.forEach((doc) => {
+      const data = doc.data();
+      const status = data.status;
+      counts[status] = (counts[status] || 0) + 1;
     });
 
     return counts;

@@ -9,13 +9,30 @@ import jobRoutes from './routes/jobs';
 import applicationRoutes from './routes/applications';
 import recruiterRoutes from './routes/recruiter';
 import analyticsRoutes from './routes/analytics';
+import notificationRoutes from './routes/notifications';
+import adzunaRoutes from './routes/adzuna';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { initSentry, getSentryMiddleware } from './config/sentry';
-import { responseTimeMiddleware, requestLoggerMiddleware, errorTrackingMiddleware } from './middleware/monitoring';
+import {
+  responseTimeMiddleware,
+  requestLoggerMiddleware,
+  errorTrackingMiddleware,
+} from './middleware/monitoring';
 import { monitoringService } from './services/monitoringService';
 import logger from './utils/logger';
+import { initializeFirebase, validateFirebaseConnection } from './config/firebase';
 
 dotenv.config();
+
+// Initialize Firebase on startup
+try {
+  initializeFirebase();
+  logger.info('Firebase initialization completed');
+} catch (error) {
+  logger.error('Failed to initialize Firebase', { error });
+  // Don't exit the process - allow the app to start even if Firebase fails
+  // This allows for graceful degradation during development
+}
 
 const app: Express = express();
 const port = process.env.PORT || 3001;
@@ -35,7 +52,14 @@ if (process.env.NODE_ENV !== 'test') {
 }
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -43,7 +67,20 @@ app.use(express.urlencoded({ extended: true }));
 app.get('/health', async (req: Request, res: Response) => {
   try {
     const healthCheck = await monitoringService.performHealthCheck();
-    const statusCode = healthCheck.status === 'healthy' ? 200 : healthCheck.status === 'degraded' ? 200 : 503;
+
+    // Add Firebase connection status to health check
+    try {
+      await validateFirebaseConnection();
+      (healthCheck as any).firebase = 'connected';
+    } catch (error) {
+      (healthCheck as any).firebase = 'disconnected';
+      if (healthCheck.status === 'healthy') {
+        healthCheck.status = 'degraded';
+      }
+    }
+
+    const statusCode =
+      healthCheck.status === 'healthy' ? 200 : healthCheck.status === 'degraded' ? 200 : 503;
     res.status(statusCode).json(healthCheck);
   } catch (error) {
     res.status(503).json({
@@ -83,6 +120,12 @@ app.use('/api/recruiter', recruiterRoutes);
 // Analytics routes
 app.use('/api/analytics', analyticsRoutes);
 
+// Notification routes
+app.use('/api/notifications', notificationRoutes);
+
+// Adzuna routes
+app.use('/api/adzuna', adzunaRoutes);
+
 // 404 handler - must be after all routes
 app.use(notFoundHandler);
 
@@ -99,7 +142,7 @@ app.use(errorHandler);
 const gracefulShutdown = (signal: string) => {
   logger.info(`${signal} received, starting graceful shutdown`);
   monitoringService.logShutdown(signal);
-  
+
   process.exit(0);
 };
 

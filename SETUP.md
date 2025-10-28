@@ -3,6 +3,7 @@
 ## What's Been Set Up
 
 ### 1. Frontend (Next.js)
+
 - ✅ Next.js 15 with TypeScript
 - ✅ TailwindCSS configured
 - ✅ ESLint configured
@@ -12,9 +13,10 @@
 **Location**: `./frontend`
 
 ### 2. Backend (Express)
+
 - ✅ Express server with TypeScript
 - ✅ CORS and body parsing middleware
-- ✅ PostgreSQL connection pool configured
+- ✅ Firebase Admin SDK configured
 - ✅ Redis client configured
 - ✅ ESLint and Prettier configured
 - ✅ Nodemon for hot reload
@@ -22,16 +24,18 @@
 
 **Location**: `./backend`
 
-### 3. Database Services (Docker)
-- ✅ PostgreSQL 16 (Alpine)
-- ✅ Redis 7 (Alpine)
-- ✅ Docker Compose configuration
+### 3. Services
+
+- ✅ Firebase (Firestore, Authentication, Storage, Realtime Database)
+- ✅ Redis 7 (Alpine) via Docker
+- ✅ Docker Compose configuration for Redis
 - ✅ Health checks configured
 - ✅ Persistent volumes
 
 **Configuration**: `./docker-compose.yml`
 
 ### 4. Development Tools
+
 - ✅ ESLint (flat config format)
 - ✅ Prettier
 - ✅ TypeScript strict mode
@@ -41,17 +45,33 @@
 ## Quick Start
 
 ### Prerequisites
+
 - Node.js 18+ installed
 - Docker Desktop running
 - npm installed
 
-### Step 1: Start Database Services
+### Step 1: Set Up Firebase
 
 ```bash
-# Make sure Docker Desktop is running, then:
+# 1. Create a Firebase project at https://console.firebase.google.com
+# 2. Enable the following services:
+#    - Authentication (Email/Password)
+#    - Firestore Database
+#    - Realtime Database
+#    - Cloud Storage
+# 3. Generate a service account key:
+#    - Go to Project Settings > Service Accounts
+#    - Click "Generate New Private Key"
+#    - Save as backend/firebase-service-account.json
+# 4. Get your Firebase web config:
+#    - Go to Project Settings > General
+#    - Add a web app if you haven't
+#    - Copy the config values to frontend/.env.local
+
+# Start Redis with Docker:
 docker compose up -d
 
-# Verify services are running:
+# Verify Redis is running:
 docker compose ps
 ```
 
@@ -69,6 +89,7 @@ npm run dev:frontend # http://localhost:3000
 ### Step 3: Verify Setup
 
 **Backend Health Check**:
+
 ```bash
 curl http://localhost:3001/health
 # Should return: {"status":"ok","timestamp":"..."}
@@ -101,18 +122,21 @@ Open http://localhost:3000 in your browser
 ## Available Commands
 
 ### Root Level
+
 - `npm run dev` - Start both frontend and backend
 - `npm run build` - Build both applications
 - `npm run lint` - Lint all workspaces
 - `npm run format` - Format code with Prettier
 
 ### Backend
+
 - `npm run dev --workspace=backend` - Start backend dev server
 - `npm run build --workspace=backend` - Compile TypeScript
 - `npm run lint --workspace=backend` - Lint backend code
 - `npm run format --workspace=backend` - Format backend code
 
 ### Frontend
+
 - `npm run dev --workspace=frontend` - Start frontend dev server
 - `npm run build --workspace=frontend` - Build for production
 - `npm run lint --workspace=frontend` - Lint frontend code
@@ -120,58 +144,76 @@ Open http://localhost:3000 in your browser
 ## Environment Variables
 
 ### Backend (.env)
+
 ```env
 PORT=3001
-DATABASE_URL=postgresql://jobportal:jobportal_dev@localhost:5432/jobportal_db
 REDIS_URL=redis://localhost:6379
 JWT_SECRET=your-secret-key-change-in-production
 FRONTEND_URL=http://localhost:3000
+
+# Firebase Admin SDK (service account JSON as string)
+FIREBASE_SERVICE_ACCOUNT={"type":"service_account","project_id":"..."}
 ```
 
 ### Frontend (.env.local)
+
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:3001
+
+# Firebase Client SDK Configuration
+NEXT_PUBLIC_FIREBASE_API_KEY=your-api-key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
+NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your-measurement-id
+NEXT_PUBLIC_FIREBASE_DATABASE_URL=https://your-project.firebaseio.com
 ```
 
-## Database Connection
+## Services Connection
 
-**PostgreSQL**:
-- Host: localhost
-- Port: 5432
-- Database: jobportal_db
-- User: jobportal
-- Password: jobportal_dev
+**Firebase**:
+
+- Cloud-hosted services (no local setup required)
+- Firestore: NoSQL document database
+- Authentication: User management
+- Storage: File storage
+- Realtime Database: Real-time data sync
 
 **Redis**:
+
 - Host: localhost
 - Port: 6379
+- Used for caching
 
 ## Troubleshooting
 
 ### Docker services won't start
+
 ```bash
 # Check if Docker is running
 docker info
 
 # If not, start Docker Desktop
 
-# Check service logs
-docker compose logs postgres
+# Check Redis logs
 docker compose logs redis
 ```
 
 ### Port already in use
+
 ```bash
 # Check what's using the port
 lsof -i :3000  # Frontend
 lsof -i :3001  # Backend
-lsof -i :5432  # PostgreSQL
 lsof -i :6379  # Redis
 
 # Kill the process or change ports in .env files
 ```
 
 ### TypeScript errors
+
 ```bash
 # Rebuild backend
 cd backend
@@ -184,31 +226,33 @@ npx tsc --noEmit
 ## Next Steps
 
 1. ✅ Project structure is set up
-2. 📝 Next: Implement database schema and migrations (Task 2)
-3. 📝 Then: Build authentication system (Task 3)
+2. ✅ Firebase migration completed
+3. 📝 Next: Continue with feature development
 
 Refer to `.kiro/specs/ai-job-portal/tasks.md` for the complete implementation plan.
 
 ## Tech Stack Summary
 
-| Component | Technology |
-|-----------|-----------|
-| Frontend Framework | Next.js 15 |
-| UI Library | React 18 |
-| Styling | TailwindCSS |
-| Backend Framework | Express 5 |
-| Language | TypeScript |
-| Database | PostgreSQL 16 |
-| Cache | Redis 7 |
-| Auth | JWT |
-| File Storage | S3 (configured) |
-| AI Service | Pollinations API |
+| Component          | Technology                 |
+| ------------------ | -------------------------- |
+| Frontend Framework | Next.js 15                 |
+| UI Library         | React 18                   |
+| Styling            | TailwindCSS                |
+| Backend Framework  | Express 5                  |
+| Language           | TypeScript                 |
+| Database           | Firebase Firestore         |
+| Real-time Data     | Firebase Realtime Database |
+| Authentication     | Firebase Authentication    |
+| File Storage       | Firebase Cloud Storage     |
+| Cache              | Redis 7                    |
+| AI Service         | Pollinations API           |
 
 ## Dependencies Installed
 
 ### Backend
+
 - express, cors, dotenv
-- pg (PostgreSQL client)
+- firebase-admin (Firebase Admin SDK)
 - redis
 - bcrypt, jsonwebtoken
 - TypeScript + type definitions
@@ -216,12 +260,15 @@ Refer to `.kiro/specs/ai-job-portal/tasks.md` for the complete implementation pl
 - nodemon, ts-node
 
 ### Frontend
+
 - next, react, react-dom
+- firebase (Firebase Client SDK)
 - tailwindcss
 - TypeScript
 - ESLint
 
 ### Development
+
 - concurrently (run multiple commands)
 - husky, lint-staged (Git hooks - optional)
 

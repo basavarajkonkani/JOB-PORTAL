@@ -22,10 +22,7 @@ export default function ResumePage() {
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
             Please sign in to upload your resume
           </h2>
-          <a
-            href="/signin"
-            className="text-blue-600 hover:text-blue-700 font-medium"
-          >
+          <a href="/signin" className="text-blue-600 hover:text-blue-700 font-medium">
             Go to Sign In
           </a>
         </div>
@@ -46,18 +43,14 @@ export default function ResumePage() {
         <div className="space-y-8">
           {/* Upload Section */}
           <div className="bg-white p-6 rounded-lg shadow-sm">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">
-              Upload Resume
-            </h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Upload Resume</h2>
             <ResumeUpload onUploadSuccess={handleUploadSuccess} />
           </div>
 
           {/* Editor Section */}
           {showEditor && uploadedResumeId && (
             <div className="bg-white p-6 rounded-lg shadow-sm">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                Edit Parsed Resume
-              </h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Edit Parsed Resume</h2>
               <ResumeEditor resumeId={uploadedResumeId} />
             </div>
           )}

@@ -28,14 +28,12 @@ describe('Recruiter JD Creation and Shortlist Integration Tests', () => {
 
   beforeEach(async () => {
     // Create recruiter user
-    const recruiterResponse = await request(app)
-      .post('/api/auth/signup')
-      .send({
-        email: 'recruiter@example.com',
-        password: 'SecurePass123!',
-        name: 'Test Recruiter',
-        role: 'recruiter',
-      });
+    const recruiterResponse = await request(app).post('/api/auth/signup').send({
+      email: 'recruiter@example.com',
+      password: 'SecurePass123!',
+      name: 'Test Recruiter',
+      role: 'recruiter',
+    });
 
     recruiterToken = recruiterResponse.body.accessToken;
     recruiterUserId = recruiterResponse.body.user.id;
@@ -51,14 +49,12 @@ describe('Recruiter JD Creation and Shortlist Integration Tests', () => {
     await RecruiterProfileModel.create({ userId: recruiterUserId, orgId });
 
     // Create candidate user
-    const candidateResponse = await request(app)
-      .post('/api/auth/signup')
-      .send({
-        email: 'candidate@example.com',
-        password: 'SecurePass123!',
-        name: 'Test Candidate',
-        role: 'candidate',
-      });
+    const candidateResponse = await request(app).post('/api/auth/signup').send({
+      email: 'candidate@example.com',
+      password: 'SecurePass123!',
+      name: 'Test Candidate',
+      role: 'candidate',
+    });
 
     candidateToken = candidateResponse.body.accessToken;
     candidateUserId = candidateResponse.body.user.id;
@@ -87,7 +83,8 @@ describe('Recruiter JD Creation and Shortlist Integration Tests', () => {
         .post('/api/recruiter/jobs')
         .set('Authorization', `Bearer ${recruiterToken}`)
         .send({
-          notes: 'Need senior engineer with TypeScript and React. Remote OK. Salary 150-200k. Good benefits.',
+          notes:
+            'Need senior engineer with TypeScript and React. Remote OK. Salary 150-200k. Good benefits.',
           generateWithAI: true,
         });
 
@@ -148,9 +145,7 @@ describe('Recruiter JD Creation and Shortlist Integration Tests', () => {
     });
 
     it('should handle AI service failure gracefully', async () => {
-      (aiService.generateJD as jest.Mock).mockRejectedValue(
-        new Error('AI service unavailable')
-      );
+      (aiService.generateJD as jest.Mock).mockRejectedValue(new Error('AI service unavailable'));
 
       const response = await request(app)
         .post('/api/recruiter/jobs')
@@ -235,14 +230,12 @@ describe('Recruiter JD Creation and Shortlist Integration Tests', () => {
 
     it('should reject update from non-owner', async () => {
       // Create another recruiter
-      const otherRecruiterResponse = await request(app)
-        .post('/api/auth/signup')
-        .send({
-          email: 'other@example.com',
-          password: 'SecurePass123!',
-          name: 'Other Recruiter',
-          role: 'recruiter',
-        });
+      const otherRecruiterResponse = await request(app).post('/api/auth/signup').send({
+        email: 'other@example.com',
+        password: 'SecurePass123!',
+        name: 'Other Recruiter',
+        role: 'recruiter',
+      });
 
       const otherToken = otherRecruiterResponse.body.accessToken;
 
@@ -378,12 +371,11 @@ describe('Recruiter JD Creation and Shortlist Integration Tests', () => {
 
       // Create applications for active job
       const resume = await ResumeModel.create(candidateUserId, 'url', 'resume.pdf');
-      const version = await ResumeVersionModel.create(
-        resume.id,
-        candidateUserId,
-        'text',
-        { skills: [], experience: [], education: [] }
-      );
+      const version = await ResumeVersionModel.create(resume.id, candidateUserId, 'text', {
+        skills: [],
+        experience: [],
+        education: [],
+      });
 
       await ApplicationModel.create({
         jobId: activeJob.id,
@@ -433,23 +425,19 @@ describe('Recruiter JD Creation and Shortlist Integration Tests', () => {
       jobId = job.id;
 
       // Create two candidates with profiles
-      const candidate1Response = await request(app)
-        .post('/api/auth/signup')
-        .send({
-          email: 'alice@example.com',
-          password: 'SecurePass123!',
-          name: 'Alice',
-          role: 'candidate',
-        });
+      const candidate1Response = await request(app).post('/api/auth/signup').send({
+        email: 'alice@example.com',
+        password: 'SecurePass123!',
+        name: 'Alice',
+        role: 'candidate',
+      });
 
-      const candidate2Response = await request(app)
-        .post('/api/auth/signup')
-        .send({
-          email: 'bob@example.com',
-          password: 'SecurePass123!',
-          name: 'Bob',
-          role: 'candidate',
-        });
+      const candidate2Response = await request(app).post('/api/auth/signup').send({
+        email: 'bob@example.com',
+        password: 'SecurePass123!',
+        name: 'Bob',
+        role: 'candidate',
+      });
 
       const candidate1Id = candidate1Response.body.user.id;
       const candidate2Id = candidate2Response.body.user.id;
@@ -560,8 +548,10 @@ describe('Recruiter JD Creation and Shortlist Integration Tests', () => {
         },
       ]);
 
-      const mockQuestions1 = '1. Describe your TypeScript experience\n2. How do you handle state management?';
-      const mockQuestions2 = '1. What React patterns do you use?\n2. How do you learn new technologies?';
+      const mockQuestions1 =
+        '1. Describe your TypeScript experience\n2. How do you handle state management?';
+      const mockQuestions2 =
+        '1. What React patterns do you use?\n2. How do you learn new technologies?';
 
       (aiService.rankCandidates as jest.Mock).mockResolvedValue(mockRankings);
       (aiService.generateScreeningQuestions as jest.Mock)
@@ -576,7 +566,7 @@ describe('Recruiter JD Creation and Shortlist Integration Tests', () => {
       expect(response.status).toBe(200);
       expect(response.body.rankedWithAI).toBe(true);
       expect(response.body.candidates.length).toBe(2);
-      
+
       // Check first candidate (highest score)
       expect(response.body.candidates[0].aiScore).toBe(92);
       expect(response.body.candidates[0].aiRationale).toContain('Excellent match');
@@ -607,14 +597,12 @@ describe('Recruiter JD Creation and Shortlist Integration Tests', () => {
 
     it('should reject access from non-owner recruiter', async () => {
       // Create another recruiter
-      const otherRecruiterResponse = await request(app)
-        .post('/api/auth/signup')
-        .send({
-          email: 'other-recruiter@example.com',
-          password: 'SecurePass123!',
-          name: 'Other Recruiter',
-          role: 'recruiter',
-        });
+      const otherRecruiterResponse = await request(app).post('/api/auth/signup').send({
+        email: 'other-recruiter@example.com',
+        password: 'SecurePass123!',
+        name: 'Other Recruiter',
+        role: 'recruiter',
+      });
 
       const otherToken = otherRecruiterResponse.body.accessToken;
 
@@ -669,14 +657,12 @@ describe('Recruiter JD Creation and Shortlist Integration Tests', () => {
       expect(publishResponse.body.job.status).toBe('active');
 
       // Step 3: Create candidate and application
-      const candidateResp = await request(app)
-        .post('/api/auth/signup')
-        .send({
-          email: 'applicant@example.com',
-          password: 'SecurePass123!',
-          name: 'Applicant',
-          role: 'candidate',
-        });
+      const candidateResp = await request(app).post('/api/auth/signup').send({
+        email: 'applicant@example.com',
+        password: 'SecurePass123!',
+        name: 'Applicant',
+        role: 'candidate',
+      });
 
       const candidateId = candidateResp.body.user.id;
 
@@ -689,12 +675,11 @@ describe('Recruiter JD Creation and Shortlist Integration Tests', () => {
       });
 
       const resume = await ResumeModel.create(candidateId, 'url', 'resume.pdf');
-      const version = await ResumeVersionModel.create(
-        resume.id,
-        candidateId,
-        'text',
-        { skills: ['TypeScript'], experience: [], education: [] }
-      );
+      const version = await ResumeVersionModel.create(resume.id, candidateId, 'text', {
+        skills: ['TypeScript'],
+        experience: [],
+        education: [],
+      });
 
       await ApplicationModel.create({
         jobId,

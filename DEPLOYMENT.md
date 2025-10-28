@@ -24,28 +24,33 @@ This guide covers deploying the AI Job Portal to various environments.
 ### Using Docker Compose
 
 1. Start all services:
+
 ```bash
 docker-compose up -d
 ```
 
 2. Run database migrations:
+
 ```bash
 cd backend
 npm run migrate:up
 ```
 
 3. Seed development data (optional):
+
 ```bash
 npm run seed:dev
 ```
 
 4. Access the application:
+
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:3001
 - PostgreSQL: localhost:5432
 - Redis: localhost:6379
 
 5. Stop services:
+
 ```bash
 docker-compose down
 ```
@@ -55,28 +60,33 @@ docker-compose down
 1. Start PostgreSQL and Redis locally
 
 2. Install backend dependencies:
+
 ```bash
 cd backend
 npm install
 ```
 
 3. Run migrations:
+
 ```bash
 npm run migrate:up
 ```
 
 4. Start backend:
+
 ```bash
 npm run dev
 ```
 
 5. Install frontend dependencies:
+
 ```bash
 cd frontend
 npm install
 ```
 
 6. Start frontend:
+
 ```bash
 npm run dev
 ```
@@ -86,22 +96,26 @@ npm run dev
 ### Production Deployment
 
 1. Create `.env` file with production variables:
+
 ```bash
 cp .env.example .env
 # Edit .env with production values
 ```
 
 2. Build and start production containers:
+
 ```bash
 docker-compose -f docker-compose.prod.yml up -d
 ```
 
 3. Run migrations:
+
 ```bash
 docker-compose -f docker-compose.prod.yml exec backend npm run migrate:up
 ```
 
 4. Verify deployment:
+
 ```bash
 ./scripts/smoke-test.sh
 ```
@@ -139,17 +153,21 @@ The project uses GitHub Actions for continuous integration and deployment.
 Configure these secrets in your GitHub repository settings:
 
 **Staging:**
+
 - `STAGING_HOST`: Staging server hostname
 - `STAGING_SSH_KEY`: SSH private key for staging server
 
 **Production:**
+
 - `PRODUCTION_HOST`: Production server hostname
 - `PRODUCTION_SSH_KEY`: SSH private key for production server
 
 **Container Registry:**
+
 - `GITHUB_TOKEN`: Automatically provided by GitHub Actions
 
 **Application:**
+
 - `NEXT_PUBLIC_API_URL`: Backend API URL for frontend
 
 ### Manual Deployment Trigger
@@ -292,6 +310,7 @@ docker-compose -f docker-compose.prod.yml exec -T postgres psql -U jobportal job
 ### Automated Backups
 
 Configure automated backups based on your hosting platform:
+
 - AWS RDS: Enable automated backups with point-in-time recovery
 - Railway/Render: Use platform backup features
 - Self-hosted: Set up cron jobs for regular backups
@@ -360,6 +379,7 @@ docker-compose -f docker-compose.prod.yml exec redis redis-cli ping
 ## Support
 
 For issues or questions:
+
 1. Check application logs
 2. Review error tracking (Sentry)
 3. Check monitoring dashboards

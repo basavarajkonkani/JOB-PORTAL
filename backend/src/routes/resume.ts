@@ -1,12 +1,16 @@
-import express, { Request, Response } from 'express';
+import express, { Response } from 'express';
 import multer from 'multer';
-import { PutObjectCommand } from '@aws-sdk/client-s3';
-import { authenticate } from '../middleware/auth';
-import s3Client, { S3_BUCKET_NAME } from '../config/s3';
+import { authenticateFirebase, AuthRequest } from '../middleware/firebaseAuth';
 import { ResumeModel, ResumeVersionModel } from '../models/Resume';
 import { parseResume } from '../utils/resumeParser';
-import crypto from 'crypto';
+import {
+  uploadFileToStorage,
+  deleteFileFromStorage,
+  isValidResumeFile,
+  isValidFileSize,
+} from '../utils/storageHelper';
 import path from 'path';
+import logger from '../utils/logger';
 
 const router = express.Router();
 
@@ -21,7 +25,7 @@ const upload = multer({
       'application/pdf',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     ];
-    
+
     if (allowedMimeTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
@@ -33,9 +37,9 @@ const upload = multer({
 // POST /api/candidate/resume/upload - Upload resume file
 router.post(
   '/candidate/resume/upload',
-  authenticate,
+  authenticateFirebase,
   upload.single('resume'),
-  async (req: Request, res: Response): Promise<void> => {
+  async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       if (!req.file) {
         res.status(400).json({
@@ -54,33 +58,35 @@ router.post(
         return;
       }
 
-      // Generate unique file name
-      const fileExtension = path.extname(req.file.originalname);
-      const uniqueFileName = `${userId}/${crypto.randomUUID()}${fileExtension}`;
+      // Validate file type
+      if (!isValidResumeFile(req.file)) {
+        res.status(400).json({
+          code: 'VALIDATION_ERROR',
+          message: 'Invalid file type. Only PDF and DOCX files are allowed.',
+        });
+        return;
+      }
 
-      // Upload to S3
-      const uploadCommand = new PutObjectCommand({
-        Bucket: S3_BUCKET_NAME,
-        Key: uniqueFileName,
-        Body: req.file.buffer,
-        ContentType: req.file.mimetype,
-        Metadata: {
-          originalName: req.file.originalname,
-          userId: userId,
-        },
-      });
+      // Validate file size
+      if (!isValidFileSize(req.file)) {
+        res.status(400).json({
+          code: 'VALIDATION_ERROR',
+          message: 'File size exceeds 10MB limit',
+        });
+        return;
+      }
 
-      await s3Client.send(uploadCommand);
+      // Upload to Firebase Cloud Storage
+      const { fileUrl, storagePath } = await uploadFileToStorage(req.file, userId, 'resumes');
 
-      // Construct file URL
-      const fileUrl = `https://${S3_BUCKET_NAME}.s3.${process.env.AWS_REGION || 'us-east-1'}.amazonaws.com/${uniqueFileName}`;
+      // Create resume record in Firestore
+      const resume = await ResumeModel.create(userId, fileUrl, req.file.originalname, storagePath);
 
-      // Create resume record in database
-      const resume = await ResumeModel.create(
+      logger.info('Resume uploaded successfully', {
+        resumeId: resume.id,
         userId,
-        fileUrl,
-        req.file.originalname
-      );
+        fileName: resume.fileName,
+      });
 
       res.status(201).json({
         message: 'Resume uploaded successfully',
@@ -92,8 +98,8 @@ router.post(
         },
       });
     } catch (error) {
-      console.error('Error uploading resume:', error);
-      
+      logger.error('Error uploading resume', { error });
+
       if (error instanceof Error && error.message.includes('Invalid file type')) {
         res.status(400).json({
           code: 'VALIDATION_ERROR',
@@ -113,8 +119,8 @@ router.post(
 // POST /api/candidate/resume/parse - Parse uploaded resume
 router.post(
   '/candidate/resume/parse',
-  authenticate,
-  async (req: Request, res: Response): Promise<void> => {
+  authenticateFirebase,
+  async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const userId = req.user?.userId;
       if (!userId) {
@@ -172,12 +178,13 @@ router.post(
       const { rawText, parsedData } = await parseResume(resume.fileUrl, mimeType);
 
       // Create resume version
-      const version = await ResumeVersionModel.create(
+      const version = await ResumeVersionModel.create(resumeId, userId, rawText, parsedData);
+
+      logger.info('Resume parsed successfully', {
         resumeId,
-        userId,
-        rawText,
-        parsedData
-      );
+        versionId: version.id,
+        version: version.version,
+      });
 
       res.status(201).json({
         message: 'Resume parsed successfully',
@@ -191,7 +198,7 @@ router.post(
         },
       });
     } catch (error) {
-      console.error('Error parsing resume:', error);
+      logger.error('Error parsing resume', { error });
       res.status(500).json({
         code: 'INTERNAL_ERROR',
         message: 'Failed to parse resume',
@@ -203,8 +210,8 @@ router.post(
 // GET /api/candidate/resumes - Get all resumes for authenticated user
 router.get(
   '/candidate/resumes',
-  authenticate,
-  async (req: Request, res: Response): Promise<void> => {
+  authenticateFirebase,
+  async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const userId = req.user?.userId;
       if (!userId) {
@@ -216,7 +223,7 @@ router.get(
       }
 
       const resumes = await ResumeModel.findByUserId(userId);
-      
+
       // Get versions for each resume
       const resumesWithVersions = await Promise.all(
         resumes.map(async (resume) => {
@@ -232,10 +239,76 @@ router.get(
         resumes: resumesWithVersions,
       });
     } catch (error) {
-      console.error('Error fetching resumes:', error);
+      logger.error('Error fetching resumes', { error });
       res.status(500).json({
         code: 'INTERNAL_ERROR',
         message: 'Failed to fetch resumes',
+      });
+    }
+  }
+);
+
+// DELETE /api/candidate/resume/:id - Delete a resume
+router.delete(
+  '/candidate/resume/:id',
+  authenticateFirebase,
+  async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const userId = req.user?.userId;
+      if (!userId) {
+        res.status(401).json({
+          code: 'UNAUTHORIZED',
+          message: 'User not authenticated',
+        });
+        return;
+      }
+
+      const { id } = req.params;
+
+      // Fetch resume
+      const resume = await ResumeModel.findById(id);
+      if (!resume) {
+        res.status(404).json({
+          code: 'NOT_FOUND',
+          message: 'Resume not found',
+        });
+        return;
+      }
+
+      // Verify ownership
+      if (resume.userId !== userId) {
+        res.status(403).json({
+          code: 'FORBIDDEN',
+          message: 'You do not have permission to delete this resume',
+        });
+        return;
+      }
+
+      // Delete file from storage
+      await deleteFileFromStorage(resume.storagePath);
+
+      // Delete all versions (subcollection will be deleted with parent in Firestore)
+      const versions = await ResumeVersionModel.findByResumeId(id);
+      for (const version of versions) {
+        await ResumeVersionModel.delete(id, version.id);
+      }
+
+      // Delete resume document
+      await ResumeModel.delete(id);
+
+      logger.info('Resume deleted successfully', {
+        resumeId: id,
+        userId,
+      });
+
+      res.json({
+        message: 'Resume deleted successfully',
+      });
+    } catch (error) {
+      logger.error('Error deleting resume', { error });
+      res.status(500).json({
+        code: 'INTERNAL_ERROR',
+        message: 'Failed to delete resume',
       });
     }
   }

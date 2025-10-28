@@ -1,6 +1,5 @@
 import { EventModel, EventInput } from '../models/Event';
 import { MetricsCacheModel } from '../models/MetricsCache';
-import pool from '../config/database';
 
 // Event types
 export enum EventType {
@@ -62,54 +61,43 @@ export class AnalyticsService {
     startDate: Date,
     endDate: Date
   ): Promise<{ rate: number; activated: number; total: number }> {
-    const query = `
-      WITH new_users AS (
-        SELECT user_id, MIN(created_at) as signup_time
-        FROM events
-        WHERE event_type = $1
-          AND created_at >= $2
-          AND created_at <= $3
-          AND user_id IS NOT NULL
-        GROUP BY user_id
-      ),
-      activated_users AS (
-        SELECT DISTINCT nu.user_id
-        FROM new_users nu
-        JOIN events e ON e.user_id = nu.user_id
-        WHERE e.event_type = $4
-          AND e.created_at >= nu.signup_time
-          AND e.created_at <= nu.signup_time + INTERVAL '24 hours'
-        GROUP BY nu.user_id
-        HAVING COUNT(*) >= 3
-      )
-      SELECT
-        COUNT(DISTINCT nu.user_id) as total,
-        COUNT(DISTINCT au.user_id) as activated
-      FROM new_users nu
-      LEFT JOIN activated_users au ON au.user_id = nu.user_id
-    `;
+    // Get all signup events in the period
+    const signupEvents = await EventModel.findByType(EventType.USER_SIGNED_UP, startDate, endDate);
 
-    const result = await pool.query(query, [
-      EventType.USER_SIGNED_UP,
-      startDate,
-      endDate,
-      EventType.JOB_VIEW,
-    ]);
+    const newUsers = new Map<string, Date>();
+    signupEvents.forEach((event) => {
+      if (
+        event.userId &&
+        (!newUsers.has(event.userId) || event.createdAt < newUsers.get(event.userId)!)
+      ) {
+        newUsers.set(event.userId, event.createdAt);
+      }
+    });
 
-    const { total, activated } = result.rows[0];
-    const totalNum = parseInt(total) || 0;
-    const activatedNum = parseInt(activated) || 0;
-    const rate = totalNum > 0 ? activatedNum / totalNum : 0;
+    // Check activation for each user
+    let activatedCount = 0;
+    for (const [userId, signupTime] of newUsers.entries()) {
+      const oneDayLater = new Date(signupTime.getTime() + 24 * 60 * 60 * 1000);
+      const jobViews = await EventModel.findByType(EventType.JOB_VIEW, signupTime, oneDayLater);
+
+      const userJobViews = jobViews.filter((e) => e.userId === userId);
+      if (userJobViews.length >= 3) {
+        activatedCount++;
+      }
+    }
+
+    const totalNum = newUsers.size;
+    const rate = totalNum > 0 ? activatedCount / totalNum : 0;
 
     // Cache the result
     await MetricsCacheModel.upsert({
       metricName: 'd1_activation_rate',
-      metricValue: { rate, activated: activatedNum, total: totalNum },
+      metricValue: { rate, activated: activatedCount, total: totalNum },
       periodStart: startDate,
       periodEnd: endDate,
     });
 
-    return { rate, activated: activatedNum, total: totalNum };
+    return { rate, activated: activatedCount, total: totalNum };
   }
 
   /**
@@ -120,11 +108,7 @@ export class AnalyticsService {
     startDate: Date,
     endDate: Date
   ): Promise<{ rate: number; applications: number; views: number }> {
-    const viewsCount = await EventModel.countByType(
-      EventType.JOB_VIEW,
-      startDate,
-      endDate
-    );
+    const viewsCount = await EventModel.countByType(EventType.JOB_VIEW, startDate, endDate);
 
     const applicationsCount = await EventModel.countByType(
       EventType.APPLICATION_SUBMITTED,
@@ -161,54 +145,42 @@ export class AnalyticsService {
     count: number;
     median: number;
   }> {
-    const query = `
-      WITH draft_events AS (
-        SELECT
-          user_id,
-          properties->>'jobId' as job_id,
-          created_at as draft_time
-        FROM events
-        WHERE event_type = $1
-          AND created_at >= $2
-          AND created_at <= $3
-          AND properties->>'jobId' IS NOT NULL
-      ),
-      publish_events AS (
-        SELECT
-          user_id,
-          properties->>'jobId' as job_id,
-          created_at as publish_time
-        FROM events
-        WHERE event_type = $4
-          AND created_at >= $2
-          AND created_at <= $3
-          AND properties->>'jobId' IS NOT NULL
-      ),
-      time_diffs AS (
-        SELECT
-          EXTRACT(EPOCH FROM (pe.publish_time - de.draft_time)) / 60 as minutes
-        FROM draft_events de
-        JOIN publish_events pe ON de.job_id = pe.job_id AND de.user_id = pe.user_id
-        WHERE pe.publish_time > de.draft_time
-      )
-      SELECT
-        AVG(minutes) as avg_minutes,
-        PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY minutes) as median_minutes,
-        COUNT(*) as count
-      FROM time_diffs
-    `;
+    // Get draft and publish events
+    const draftEvents = await EventModel.findByType(EventType.JD_DRAFT_CREATED, startDate, endDate);
 
-    const result = await pool.query(query, [
-      EventType.JD_DRAFT_CREATED,
-      startDate,
-      endDate,
-      EventType.JD_PUBLISHED,
-    ]);
+    const publishEvents = await EventModel.findByType(EventType.JD_PUBLISHED, startDate, endDate);
 
-    const row = result.rows[0];
-    const averageMinutes = parseFloat(row.avg_minutes) || 0;
-    const median = parseFloat(row.median_minutes) || 0;
-    const count = parseInt(row.count) || 0;
+    // Match drafts to publishes
+    const timeDiffs: number[] = [];
+    for (const draft of draftEvents) {
+      const jobId = draft.properties?.jobId;
+      if (!jobId || !draft.userId) continue;
+
+      const matchingPublish = publishEvents.find(
+        (p) =>
+          p.properties?.jobId === jobId &&
+          p.userId === draft.userId &&
+          p.createdAt > draft.createdAt
+      );
+
+      if (matchingPublish) {
+        const diffMs = matchingPublish.createdAt.getTime() - draft.createdAt.getTime();
+        timeDiffs.push(diffMs / (1000 * 60)); // Convert to minutes
+      }
+    }
+
+    const count = timeDiffs.length;
+    const averageMinutes = count > 0 ? timeDiffs.reduce((a, b) => a + b, 0) / count : 0;
+
+    // Calculate median
+    let median = 0;
+    if (count > 0) {
+      timeDiffs.sort((a, b) => a - b);
+      median =
+        count % 2 === 0
+          ? (timeDiffs[count / 2 - 1] + timeDiffs[count / 2]) / 2
+          : timeDiffs[Math.floor(count / 2)];
+    }
 
     // Cache the result
     await MetricsCacheModel.upsert({
@@ -274,12 +246,7 @@ export class AnalyticsService {
    * Get all metrics for a time period
    */
   static async getAllMetrics(startDate: Date, endDate: Date) {
-    const [
-      d1Activation,
-      applyConversion,
-      timeToPublish,
-      aiMetrics,
-    ] = await Promise.all([
+    const [d1Activation, applyConversion, timeToPublish, aiMetrics] = await Promise.all([
       this.calculateD1ActivationRate(startDate, endDate),
       this.calculateApplyConversionRate(startDate, endDate),
       this.calculateRecruiterTimeToPublish(startDate, endDate),

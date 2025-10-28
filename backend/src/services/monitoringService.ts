@@ -12,7 +12,6 @@ interface HealthCheckResult {
   status: 'healthy' | 'degraded' | 'unhealthy';
   checks: {
     database: boolean;
-    redis: boolean;
     ai_service: boolean;
   };
   timestamp: Date;
@@ -33,10 +32,10 @@ class MonitoringService {
    */
   recordMetric(data: MetricData): void {
     const { name, value, tags, timestamp = new Date() } = data;
-    
+
     // Store metric in memory
     this.metrics.set(name, value);
-    
+
     // Log metric
     logger.info('Metric recorded', {
       metric: name,
@@ -44,7 +43,7 @@ class MonitoringService {
       tags,
       timestamp,
     });
-    
+
     // Send to Sentry if available
     if (Sentry) {
       Sentry.metrics.gauge(name, value, {
@@ -148,7 +147,6 @@ class MonitoringService {
   async performHealthCheck(): Promise<HealthCheckResult> {
     const checks = {
       database: await this.checkDatabase(),
-      redis: await this.checkRedis(),
       ai_service: await this.checkAIService(),
     };
 
@@ -173,29 +171,16 @@ class MonitoringService {
   }
 
   /**
-   * Check database connectivity
+   * Check database connectivity (Firebase Firestore)
    */
   private async checkDatabase(): Promise<boolean> {
     try {
-      const pool = (await import('../config/database')).default;
-      const result = await pool.query('SELECT 1');
-      return result.rows.length > 0;
+      const { firestore } = await import('../config/firebase');
+      // Simple health check - try to read from a collection
+      await firestore.collection('users').limit(1).get();
+      return true;
     } catch (error) {
       logger.error('Database health check failed', { error });
-      return false;
-    }
-  }
-
-  /**
-   * Check Redis connectivity
-   */
-  private async checkRedis(): Promise<boolean> {
-    try {
-      const redisClient = (await import('../config/redis')).default;
-      const pong = await redisClient.ping();
-      return pong === 'PONG';
-    } catch (error) {
-      logger.error('Redis health check failed', { error });
       return false;
     }
   }

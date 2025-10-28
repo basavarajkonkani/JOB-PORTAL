@@ -122,7 +122,7 @@ export default function CandidateProfile() {
   };
 
   const removeSkill = (skill: string) => {
-    setProfile({ ...profile, skills: profile.skills.filter(s => s !== skill) });
+    setProfile({ ...profile, skills: profile.skills.filter((s) => s !== skill) });
   };
 
   const addExperience = () => {
@@ -224,7 +224,7 @@ export default function CandidateProfile() {
           <input
             type="text"
             value={profile.location}
-            onChange={e => setProfile({ ...profile, location: e.target.value })}
+            onChange={(e) => setProfile({ ...profile, location: e.target.value })}
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="e.g., San Francisco, CA"
           />
@@ -237,8 +237,8 @@ export default function CandidateProfile() {
             <input
               type="text"
               value={newSkill}
-              onChange={e => setNewSkill(e.target.value)}
-              onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), addSkill())}
+              onChange={(e) => setNewSkill(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
               className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Add a skill"
             />
@@ -251,7 +251,7 @@ export default function CandidateProfile() {
             </button>
           </div>
           <div className="flex flex-wrap gap-2">
-            {profile.skills.map(skill => (
+            {profile.skills.map((skill) => (
               <span
                 key={skill}
                 className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm flex items-center gap-2"
@@ -288,35 +288,35 @@ export default function CandidateProfile() {
                   <input
                     type="text"
                     value={exp.company}
-                    onChange={e => updateExperience(index, 'company', e.target.value)}
+                    onChange={(e) => updateExperience(index, 'company', e.target.value)}
                     className="px-4 py-2 border border-gray-300 rounded-md"
                     placeholder="Company"
                   />
                   <input
                     type="text"
                     value={exp.title}
-                    onChange={e => updateExperience(index, 'title', e.target.value)}
+                    onChange={(e) => updateExperience(index, 'title', e.target.value)}
                     className="px-4 py-2 border border-gray-300 rounded-md"
                     placeholder="Title"
                   />
                   <input
                     type="month"
                     value={exp.startDate}
-                    onChange={e => updateExperience(index, 'startDate', e.target.value)}
+                    onChange={(e) => updateExperience(index, 'startDate', e.target.value)}
                     className="px-4 py-2 border border-gray-300 rounded-md"
                     placeholder="Start Date"
                   />
                   <input
                     type="month"
                     value={exp.endDate || ''}
-                    onChange={e => updateExperience(index, 'endDate', e.target.value)}
+                    onChange={(e) => updateExperience(index, 'endDate', e.target.value)}
                     className="px-4 py-2 border border-gray-300 rounded-md"
                     placeholder="End Date (optional)"
                   />
                 </div>
                 <textarea
                   value={exp.description}
-                  onChange={e => updateExperience(index, 'description', e.target.value)}
+                  onChange={(e) => updateExperience(index, 'description', e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md"
                   placeholder="Description"
                   rows={3}
@@ -352,28 +352,28 @@ export default function CandidateProfile() {
                   <input
                     type="text"
                     value={edu.institution}
-                    onChange={e => updateEducation(index, 'institution', e.target.value)}
+                    onChange={(e) => updateEducation(index, 'institution', e.target.value)}
                     className="px-4 py-2 border border-gray-300 rounded-md"
                     placeholder="Institution"
                   />
                   <input
                     type="text"
                     value={edu.degree}
-                    onChange={e => updateEducation(index, 'degree', e.target.value)}
+                    onChange={(e) => updateEducation(index, 'degree', e.target.value)}
                     className="px-4 py-2 border border-gray-300 rounded-md"
                     placeholder="Degree"
                   />
                   <input
                     type="text"
                     value={edu.field}
-                    onChange={e => updateEducation(index, 'field', e.target.value)}
+                    onChange={(e) => updateEducation(index, 'field', e.target.value)}
                     className="px-4 py-2 border border-gray-300 rounded-md"
                     placeholder="Field of Study"
                   />
                   <input
                     type="month"
                     value={edu.graduationDate}
-                    onChange={e => updateEducation(index, 'graduationDate', e.target.value)}
+                    onChange={(e) => updateEducation(index, 'graduationDate', e.target.value)}
                     className="px-4 py-2 border border-gray-300 rounded-md"
                     placeholder="Graduation Date"
                   />
@@ -399,12 +399,15 @@ export default function CandidateProfile() {
               <input
                 type="text"
                 value={profile.preferences.roles?.join(', ') || ''}
-                onChange={e =>
+                onChange={(e) =>
                   setProfile({
                     ...profile,
                     preferences: {
                       ...profile.preferences,
-                      roles: e.target.value.split(',').map(r => r.trim()).filter(Boolean),
+                      roles: e.target.value
+                        .split(',')
+                        .map((r) => r.trim())
+                        .filter(Boolean),
                     },
                   })
                 }
@@ -417,12 +420,15 @@ export default function CandidateProfile() {
               <input
                 type="text"
                 value={profile.preferences.locations?.join(', ') || ''}
-                onChange={e =>
+                onChange={(e) =>
                   setProfile({
                     ...profile,
                     preferences: {
                       ...profile.preferences,
-                      locations: e.target.value.split(',').map(l => l.trim()).filter(Boolean),
+                      locations: e.target.value
+                        .split(',')
+                        .map((l) => l.trim())
+                        .filter(Boolean),
                     },
                   })
                 }
@@ -434,7 +440,7 @@ export default function CandidateProfile() {
               <input
                 type="checkbox"
                 checked={profile.preferences.remoteOnly || false}
-                onChange={e =>
+                onChange={(e) =>
                   setProfile({
                     ...profile,
                     preferences: { ...profile.preferences, remoteOnly: e.target.checked },
@@ -449,7 +455,7 @@ export default function CandidateProfile() {
               <input
                 type="number"
                 value={profile.preferences.minCompensation || ''}
-                onChange={e =>
+                onChange={(e) =>
                   setProfile({
                     ...profile,
                     preferences: {

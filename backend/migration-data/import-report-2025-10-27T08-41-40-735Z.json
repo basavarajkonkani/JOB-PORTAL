@@ -1,0 +1,89 @@
+{
+  "importedAt": "2025-10-27T08:41:40.735Z",
+  "sourceFile": "/Users/basavarajgm/Desktop/NIGHAN2/jobportal/backend/migration-data/test/test-export.json",
+  "stats": {
+    "users": {
+      "success": 0,
+      "failed": 2
+    },
+    "organizations": {
+      "success": 0,
+      "failed": 1
+    },
+    "candidateProfiles": {
+      "success": 0,
+      "failed": 1
+    },
+    "recruiterProfiles": {
+      "success": 0,
+      "failed": 1
+    },
+    "jobs": {
+      "success": 0,
+      "failed": 1
+    },
+    "applications": {
+      "success": 0,
+      "failed": 1
+    },
+    "resumes": {
+      "success": 0,
+      "failed": 1
+    },
+    "resumeVersions": {
+      "success": 0,
+      "failed": 1
+    }
+  },
+  "errors": [
+    {
+      "type": "user",
+      "id": "test-user-1",
+      "error": "Firebase initialization failed: FIREBASE_SERVICE_ACCOUNT environment variable is not set"
+    },
+    {
+      "type": "user",
+      "id": "test-user-2",
+      "error": "Firebase initialization failed: FIREBASE_SERVICE_ACCOUNT environment variable is not set"
+    },
+    {
+      "type": "organization",
+      "id": "test-org-1",
+      "error": "Firebase initialization failed: FIREBASE_SERVICE_ACCOUNT environment variable is not set"
+    },
+    {
+      "type": "candidateProfile",
+      "id": "test-user-1",
+      "error": "Firebase initialization failed: FIREBASE_SERVICE_ACCOUNT environment variable is not set"
+    },
+    {
+      "type": "recruiterProfile",
+      "id": "test-user-2",
+      "error": "Firebase initialization failed: FIREBASE_SERVICE_ACCOUNT environment variable is not set"
+    },
+    {
+      "type": "job",
+      "id": "test-job-1",
+      "error": "Firebase initialization failed: FIREBASE_SERVICE_ACCOUNT environment variable is not set"
+    },
+    {
+      "type": "application",
+      "id": "test-app-1",
+      "error": "Firebase initialization failed: FIREBASE_SERVICE_ACCOUNT environment variable is not set"
+    },
+    {
+      "type": "resume",
+      "id": "test-resume-1",
+      "error": "Firebase initialization failed: FIREBASE_SERVICE_ACCOUNT environment variable is not set"
+    },
+    {
+      "type": "resumeVersion",
+      "id": "test-resume-v1",
+      "error": "Firebase initialization failed: FIREBASE_SERVICE_ACCOUNT environment variable is not set"
+    }
+  ],
+  "summary": {
+    "totalSuccess": 0,
+    "totalFailed": 9
+  }
+}

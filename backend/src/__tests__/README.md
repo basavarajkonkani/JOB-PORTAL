@@ -7,12 +7,14 @@ This directory contains integration tests for the AI Job Portal backend API.
 The integration tests cover the following critical flows:
 
 ### 1. Authentication Flow (`auth.test.ts`)
+
 - User signup with validation
 - User signin with credentials
 - Token refresh mechanism
 - Complete auth flow (signup → signin → refresh)
 
 ### 2. Job Search and Application Flow (`jobs-applications.test.ts`)
+
 - Job search with filters (title, level, location, remote)
 - Job pagination
 - Job detail retrieval
@@ -21,12 +23,14 @@ The integration tests cover the following critical flows:
 - Complete candidate flow (search → view → apply → track)
 
 ### 3. Resume Upload and Parsing (`resume.test.ts`)
+
 - Resume file upload to S3
 - Resume parsing (PDF/DOCX)
 - Resume version management
 - Complete resume flow (upload → parse → retrieve)
 
 ### 4. AI Service Integration (`ai-service.test.ts`)
+
 - Fit summary generation
 - Cover letter generation
 - Resume improvement suggestions
@@ -38,6 +42,7 @@ The integration tests cover the following critical flows:
 - Error handling and graceful degradation
 
 ### 5. Recruiter JD Creation and Shortlist (`recruiter.test.ts`)
+
 - Job creation with AI-generated JD
 - Manual job creation
 - Job updates and hero image generation
@@ -58,21 +63,25 @@ Before running the tests, ensure you have:
 ## Running Tests
 
 ### Run all tests
+
 ```bash
 npm test
 ```
 
 ### Run specific test file
+
 ```bash
 npm test -- auth.test.ts
 ```
 
 ### Run tests with coverage
+
 ```bash
 npm run test:coverage
 ```
 
 ### Run tests in watch mode
+
 ```bash
 npm run test:watch
 ```
@@ -82,7 +91,7 @@ npm run test:watch
 The tests use the following setup:
 
 - **Test Database**: Uses the same database as development but cleans up after each test
-- **Mocked Services**: 
+- **Mocked Services**:
   - S3 upload is mocked to avoid actual file uploads
   - Resume parser is mocked with sample data
   - AI service (Pollinations API) is mocked with predefined responses
@@ -116,23 +125,30 @@ The tests use Jest mocks for external dependencies:
 ## Troubleshooting
 
 ### Database Connection Errors
+
 Ensure PostgreSQL is running and the database exists:
+
 ```bash
 psql -U postgres -c "CREATE DATABASE job_portal;"
 npm run migrate:up
 ```
 
 ### Redis Connection Errors
+
 Ensure Redis is running:
+
 ```bash
 redis-server
 ```
 
 ### Test Timeouts
+
 Increase the timeout in jest.config.js or use `--testTimeout` flag:
+
 ```bash
 npm test -- --testTimeout=60000
 ```
 
 ### Port Conflicts
+
 If port 3001 is in use, update the PORT in `.env.test`

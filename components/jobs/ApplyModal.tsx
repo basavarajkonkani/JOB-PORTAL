@@ -41,14 +41,11 @@ export default function ApplyModal({ job, onClose, onSuccess }: ApplyModalProps)
 
   const fetchResumeVersions = async () => {
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/candidate/resumes`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/candidate/resumes`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
 
       if (response.ok) {
         const data = await response.json();
@@ -67,19 +64,16 @@ export default function ApplyModal({ job, onClose, onSuccess }: ApplyModalProps)
     setError('');
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/ai/cover-letter`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify({
-            jobData: job,
-          }),
-        }
-      );
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ai/cover-letter`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          jobData: job,
+        }),
+      });
 
       if (response.ok) {
         const data = await response.json();
@@ -111,21 +105,18 @@ export default function ApplyModal({ job, onClose, onSuccess }: ApplyModalProps)
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/applications`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify({
-            jobId: job.id,
-            resumeVersionId: selectedResumeId,
-            coverLetter: coverLetter.trim(),
-          }),
-        }
-      );
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/applications`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          jobId: job.id,
+          resumeVersionId: selectedResumeId,
+          coverLetter: coverLetter.trim(),
+        }),
+      });
 
       if (!response.ok) {
         const data = await response.json();
@@ -155,7 +146,12 @@ export default function ApplyModal({ job, onClose, onSuccess }: ApplyModalProps)
               aria-label="Close"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -209,8 +205,19 @@ export default function ApplyModal({ job, onClose, onSuccess }: ApplyModalProps)
                   {isGeneratingCoverLetter ? (
                     <span className="flex items-center">
                       <svg className="animate-spin h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
                       </svg>
                       Generating...
                     </span>
@@ -229,7 +236,8 @@ export default function ApplyModal({ job, onClose, onSuccess }: ApplyModalProps)
                 required
               />
               <p className="mt-1 text-xs text-gray-500">
-                Tip: Use the AI generator to create a tailored cover letter based on your profile and the job requirements.
+                Tip: Use the AI generator to create a tailored cover letter based on your profile
+                and the job requirements.
               </p>
             </div>
 

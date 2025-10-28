@@ -28,27 +28,23 @@ describe('Job Search and Application Flow Integration Tests', () => {
 
   beforeEach(async () => {
     // Create candidate user
-    const candidateResponse = await request(app)
-      .post('/api/auth/signup')
-      .send({
-        email: 'candidate@example.com',
-        password: 'SecurePass123!',
-        name: 'Test Candidate',
-        role: 'candidate',
-      });
+    const candidateResponse = await request(app).post('/api/auth/signup').send({
+      email: 'candidate@example.com',
+      password: 'SecurePass123!',
+      name: 'Test Candidate',
+      role: 'candidate',
+    });
 
     candidateToken = candidateResponse.body.accessToken;
     candidateUserId = candidateResponse.body.user.id;
 
     // Create recruiter user
-    const recruiterResponse = await request(app)
-      .post('/api/auth/signup')
-      .send({
-        email: 'recruiter@example.com',
-        password: 'SecurePass123!',
-        name: 'Test Recruiter',
-        role: 'recruiter',
-      });
+    const recruiterResponse = await request(app).post('/api/auth/signup').send({
+      email: 'recruiter@example.com',
+      password: 'SecurePass123!',
+      name: 'Test Recruiter',
+      role: 'recruiter',
+    });
 
     recruiterToken = recruiterResponse.body.accessToken;
     recruiterUserId = recruiterResponse.body.user.id;
@@ -83,9 +79,7 @@ describe('Job Search and Application Flow Integration Tests', () => {
 
   describe('Job Search Flow', () => {
     it('should search jobs without authentication', async () => {
-      const response = await request(app)
-        .get('/api/jobs')
-        .query({ page: 1, limit: 20 });
+      const response = await request(app).get('/api/jobs').query({ page: 1, limit: 20 });
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('jobs');
@@ -156,16 +150,12 @@ describe('Job Search and Application Flow Integration Tests', () => {
         });
       }
 
-      const page1Response = await request(app)
-        .get('/api/jobs')
-        .query({ page: 1, limit: 20 });
+      const page1Response = await request(app).get('/api/jobs').query({ page: 1, limit: 20 });
 
       expect(page1Response.status).toBe(200);
       expect(page1Response.body.jobs.length).toBe(20);
 
-      const page2Response = await request(app)
-        .get('/api/jobs')
-        .query({ page: 2, limit: 20 });
+      const page2Response = await request(app).get('/api/jobs').query({ page: 2, limit: 20 });
 
       expect(page2Response.status).toBe(200);
       expect(page2Response.body.jobs.length).toBeGreaterThan(0);
@@ -174,8 +164,7 @@ describe('Job Search and Application Flow Integration Tests', () => {
 
   describe('Job Detail Flow', () => {
     it('should get job detail without authentication', async () => {
-      const response = await request(app)
-        .get(`/api/jobs/${jobId}`);
+      const response = await request(app).get(`/api/jobs/${jobId}`);
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('job');
@@ -211,8 +200,7 @@ describe('Job Search and Application Flow Integration Tests', () => {
     });
 
     it('should return 404 for non-existent job', async () => {
-      const response = await request(app)
-        .get('/api/jobs/00000000-0000-0000-0000-000000000000');
+      const response = await request(app).get('/api/jobs/00000000-0000-0000-0000-000000000000');
 
       expect(response.status).toBe(404);
       expect(response.body.code).toBe('NOT_FOUND');
@@ -234,8 +222,7 @@ describe('Job Search and Application Flow Integration Tests', () => {
         status: 'draft',
       });
 
-      const response = await request(app)
-        .get(`/api/jobs/${draftJob.id}`);
+      const response = await request(app).get(`/api/jobs/${draftJob.id}`);
 
       expect(response.status).toBe(404);
     });
@@ -252,12 +239,14 @@ describe('Job Search and Application Flow Integration Tests', () => {
         .send({
           location: 'San Francisco, CA',
           skills: ['TypeScript', 'React'],
-          experience: [{
-            company: 'Previous Company',
-            title: 'Software Engineer',
-            startDate: '2020-01-01',
-            description: 'Worked on web applications',
-          }],
+          experience: [
+            {
+              company: 'Previous Company',
+              title: 'Software Engineer',
+              startDate: '2020-01-01',
+              description: 'Worked on web applications',
+            },
+          ],
           education: [],
           preferences: {
             roles: ['Software Engineer'],
@@ -304,13 +293,11 @@ describe('Job Search and Application Flow Integration Tests', () => {
     });
 
     it('should reject application without authentication', async () => {
-      const response = await request(app)
-        .post('/api/applications')
-        .send({
-          jobId,
-          resumeVersionId,
-          coverLetter: 'Cover letter',
-        });
+      const response = await request(app).post('/api/applications').send({
+        jobId,
+        resumeVersionId,
+        coverLetter: 'Cover letter',
+      });
 
       expect(response.status).toBe(401);
     });
@@ -396,12 +383,11 @@ describe('Job Search and Application Flow Integration Tests', () => {
         'https://example.com/resume.pdf',
         'resume.pdf'
       );
-      const version = await ResumeVersionModel.create(
-        resume.id,
-        candidateUserId,
-        'Resume text',
-        { skills: [], experience: [], education: [] }
-      );
+      const version = await ResumeVersionModel.create(resume.id, candidateUserId, 'Resume text', {
+        skills: [],
+        experience: [],
+        education: [],
+      });
       resumeVersionId = version.id;
 
       // Submit application
@@ -453,11 +439,9 @@ describe('Job Search and Application Flow Integration Tests', () => {
     });
 
     it('should reject update without authentication', async () => {
-      const response = await request(app)
-        .put(`/api/applications/${applicationId}`)
-        .send({
-          notes: 'Test notes',
-        });
+      const response = await request(app).put(`/api/applications/${applicationId}`).send({
+        notes: 'Test notes',
+      });
 
       expect(response.status).toBe(401);
     });

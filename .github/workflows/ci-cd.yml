@@ -1,5 +1,37 @@
 name: CI/CD Pipeline
 
+# ============================================
+# Required GitHub Secrets:
+# ============================================
+# Firebase Configuration:
+#   - FIREBASE_TOKEN: Firebase CLI token for deploying security rules (run: firebase login:ci)
+#   - FIREBASE_SERVICE_ACCOUNT_STAGING: Firebase service account JSON for staging environment
+#   - FIREBASE_SERVICE_ACCOUNT_PRODUCTION: Firebase service account JSON for production environment
+#   - FIREBASE_STORAGE_BUCKET_STAGING: Firebase storage bucket for staging
+#   - FIREBASE_STORAGE_BUCKET_PRODUCTION: Firebase storage bucket for production
+#   - FIREBASE_DATABASE_URL_STAGING: Firebase Realtime Database URL for staging
+#   - FIREBASE_DATABASE_URL_PRODUCTION: Firebase Realtime Database URL for production
+#
+# Frontend Firebase Configuration (for build):
+#   - NEXT_PUBLIC_FIREBASE_API_KEY: Firebase API key
+#   - NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: Firebase auth domain
+#   - NEXT_PUBLIC_FIREBASE_PROJECT_ID: Firebase project ID
+#   - NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: Firebase storage bucket
+#   - NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: Firebase messaging sender ID
+#   - NEXT_PUBLIC_FIREBASE_APP_ID: Firebase app ID
+#   - NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: Firebase measurement ID (optional)
+#   - NEXT_PUBLIC_FIREBASE_DATABASE_URL: Firebase Realtime Database URL
+#
+# Deployment:
+#   - STAGING_HOST: Staging server hostname
+#   - STAGING_SSH_KEY: SSH key for staging deployment
+#   - PRODUCTION_HOST: Production server hostname
+#   - PRODUCTION_SSH_KEY: SSH key for production deployment
+#   - NEXT_PUBLIC_API_URL: Backend API URL
+#
+# Note: PostgreSQL and AWS S3 secrets are no longer needed - Firebase handles all data storage
+# ============================================
+
 on:
   push:
     branches: [main, develop]
@@ -127,6 +159,14 @@ jobs:
         run: npm run build
         env:
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || 'http://localhost:3001' }}
+          NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
+          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
+          NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
+          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
+          NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
+          NEXT_PUBLIC_FIREBASE_APP_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}
+          NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID }}
+          NEXT_PUBLIC_FIREBASE_DATABASE_URL: ${{ secrets.NEXT_PUBLIC_FIREBASE_DATABASE_URL }}
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -202,6 +242,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Deploy Firebase Security Rules to Staging
+        run: |
+          echo "Deploying Firebase security rules to staging..."
+          cd backend
+          npm install -g firebase-tools
+          firebase use staging --token ${{ secrets.FIREBASE_TOKEN }}
+          firebase deploy --only firestore:rules,storage:rules,database:rules --token ${{ secrets.FIREBASE_TOKEN }}
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
       - name: Deploy to staging
         run: |
           echo "Deploying to staging environment..."
@@ -214,6 +264,10 @@ jobs:
         env:
           STAGING_HOST: ${{ secrets.STAGING_HOST }}
           STAGING_SSH_KEY: ${{ secrets.STAGING_SSH_KEY }}
+          # Firebase credentials for backend
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_STAGING }}
+          FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET_STAGING }}
+          FIREBASE_DATABASE_URL: ${{ secrets.FIREBASE_DATABASE_URL_STAGING }}
 
       - name: Wait for deployment
         run: sleep 30
@@ -239,6 +293,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Deploy Firebase Security Rules to Production
+        run: |
+          echo "Deploying Firebase security rules to production..."
+          cd backend
+          npm install -g firebase-tools
+          firebase use production --token ${{ secrets.FIREBASE_TOKEN }}
+          firebase deploy --only firestore:rules,storage:rules,database:rules --token ${{ secrets.FIREBASE_TOKEN }}
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
       - name: Deploy to production
         run: |
           echo "Deploying to production environment..."
@@ -251,6 +315,10 @@ jobs:
         env:
           PRODUCTION_HOST: ${{ secrets.PRODUCTION_HOST }}
           PRODUCTION_SSH_KEY: ${{ secrets.PRODUCTION_SSH_KEY }}
+          # Firebase credentials for backend
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_PRODUCTION }}
+          FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET_PRODUCTION }}
+          FIREBASE_DATABASE_URL: ${{ secrets.FIREBASE_DATABASE_URL_PRODUCTION }}
 
       - name: Wait for deployment
         run: sleep 30

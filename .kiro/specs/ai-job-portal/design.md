@@ -102,6 +102,7 @@ External Services:
 **Responsibilities**: Authentication, user management, profile CRUD
 
 **Key Methods**:
+
 - `createUser(email, password, role)`: Create new user account
 - `authenticateUser(email, password)`: Validate credentials, return JWT
 - `getUserProfile(userId)`: Fetch user and associated profile data
@@ -115,6 +116,7 @@ External Services:
 **Responsibilities**: Job CRUD, search, filtering, application management
 
 **Key Methods**:
+
 - `searchJobs(filters, pagination)`: Query jobs with filters and pagination
 - `getJobDetail(jobId, userId?)`: Fetch job with optional user context
 - `createJob(recruiterId, jobData)`: Create new job posting
@@ -130,6 +132,7 @@ External Services:
 **Responsibilities**: Resume upload, parsing, version management
 
 **Key Methods**:
+
 - `uploadResume(userId, file)`: Store file in S3, return file URL
 - `parseResume(fileUrl)`: Extract text and structured data from PDF/DOCX
 - `saveResumeVersion(userId, parsedData)`: Create new resume version
@@ -145,6 +148,7 @@ External Services:
 **Responsibilities**: Pollinations API integration, prompt engineering, caching
 
 **Key Methods**:
+
 - `generateText(systemPrompt, userPrompt, options)`: Call Pollinations text API
 - `generateImage(prompt, options)`: Construct Pollinations image URL
 - `generateFitSummary(jobData, candidateProfile)`: Create job fit analysis
@@ -155,6 +159,7 @@ External Services:
 - `generateScreeningQuestions(jobData, candidateProfile)`: Create interview questions
 
 **Caching Strategy**:
+
 - Cache image URLs by prompt hash (24 hour TTL)
 - Cache text results by prompt hash (1 hour TTL)
 - Invalidate on user request or parameter change
@@ -162,16 +167,19 @@ External Services:
 **Pollinations Integration**:
 
 Text API format:
+
 ```
 https://text.pollinations.ai/{model}?temperature={temp}&system={system}&prompt={prompt}
 ```
 
 Image API format:
+
 ```
 https://image.pollinations.ai/prompt/{encoded_prompt}?width={w}&height={h}&seed={seed}&nologo=true
 ```
 
 **Error Handling**:
+
 - Retry with exponential backoff (max 3 attempts)
 - Return cached result if available
 - Return error object with fallback suggestions
@@ -181,6 +189,7 @@ https://image.pollinations.ai/prompt/{encoded_prompt}?width={w}&height={h}&seed=
 **Responsibilities**: Event tracking, metric calculation, reporting
 
 **Key Methods**:
+
 - `trackEvent(userId, eventType, properties)`: Log user event
 - `trackAIUsage(userId, operation, accepted)`: Log AI interaction
 - `calculateD1Activation()`: Compute activation rate
@@ -405,22 +414,22 @@ enum ErrorCode {
   UNAUTHORIZED = 'UNAUTHORIZED',
   FORBIDDEN = 'FORBIDDEN',
   INVALID_CREDENTIALS = 'INVALID_CREDENTIALS',
-  
+
   // Validation errors
   VALIDATION_ERROR = 'VALIDATION_ERROR',
   INVALID_INPUT = 'INVALID_INPUT',
-  
+
   // Resource errors
   NOT_FOUND = 'NOT_FOUND',
   ALREADY_EXISTS = 'ALREADY_EXISTS',
-  
+
   // External service errors
   AI_SERVICE_ERROR = 'AI_SERVICE_ERROR',
   STORAGE_ERROR = 'STORAGE_ERROR',
-  
+
   // Rate limiting
   RATE_LIMIT_EXCEEDED = 'RATE_LIMIT_EXCEEDED',
-  
+
   // Server errors
   INTERNAL_ERROR = 'INTERNAL_ERROR',
 }
@@ -456,6 +465,7 @@ interface ErrorResponse {
 **Coverage Target**: 80% for business logic
 
 **Focus Areas**:
+
 - Service methods (User, Job, Resume, AI services)
 - Utility functions (prompt builders, parsers, validators)
 - Data transformations and formatters
@@ -465,6 +475,7 @@ interface ErrorResponse {
 ### Integration Tests
 
 **Focus Areas**:
+
 - API endpoint flows (auth → profile → job search → apply)
 - Database operations (CRUD, transactions, constraints)
 - External service mocking (Pollinations API, S3)
@@ -474,6 +485,7 @@ interface ErrorResponse {
 ### End-to-End Tests
 
 **Critical Paths**:
+
 1. Candidate onboarding: signup → upload resume → view profile
 2. Job application: search → view detail → apply with AI cover letter
 3. Recruiter JD creation: login → create job with AI → publish
@@ -484,11 +496,13 @@ interface ErrorResponse {
 ### Performance Tests
 
 **Scenarios**:
+
 - Concurrent job searches (100 users)
 - AI service load (50 simultaneous requests)
 - Database query performance (complex joins, large result sets)
 
 **Targets**:
+
 - API response time p95 < 1s
 - Page load time p95 < 2s
 - AI response time p95 < 5s
@@ -498,6 +512,7 @@ interface ErrorResponse {
 ### Accessibility Tests
 
 **Requirements**:
+
 - Automated WCAG 2.1 AA checks
 - Keyboard navigation testing
 - Screen reader compatibility

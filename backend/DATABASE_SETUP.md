@@ -1,200 +1,286 @@
-# Database Setup Guide
+# Firebase Setup Guide
 
 ## Prerequisites
 
-- Docker and Docker Compose installed
 - Node.js 18+ installed
-- PostgreSQL client (optional, for manual queries)
+- Firebase account (free tier available)
+- Firebase CLI installed: `npm install -g firebase-tools`
 
 ## Step-by-Step Setup
 
-### 1. Start PostgreSQL Database
+### 1. Create Firebase Project
 
-From the project root directory:
+1. Go to [Firebase Console](https://console.firebase.google.com)
+2. Click "Add project"
+3. Enter project name (e.g., "jobportal")
+4. Follow the setup wizard
 
-```bash
-docker-compose up -d postgres
+### 2. Enable Firebase Services
+
+In your Firebase project console:
+
+#### Authentication
+
+1. Go to Authentication > Sign-in method
+2. Enable "Email/Password" provider
+3. Save changes
+
+#### Firestore Database
+
+1. Go to Firestore Database
+2. Click "Create database"
+3. Start in production mode (we'll add security rules later)
+4. Choose a location close to your users
+
+#### Realtime Database
+
+1. Go to Realtime Database
+2. Click "Create database"
+3. Start in locked mode
+4. Choose a location
+
+#### Cloud Storage
+
+1. Go to Storage
+2. Click "Get started"
+3. Start in production mode
+4. Choose a location
+
+### 3. Get Service Account Key (Backend)
+
+1. Go to Project Settings > Service Accounts
+2. Click "Generate new private key"
+3. Save the JSON file as `backend/firebase-service-account.json`
+4. **Important**: Add this file to `.gitignore` (already done)
+
+### 4. Get Web App Config (Frontend)
+
+1. Go to Project Settings > General
+2. Scroll to "Your apps"
+3. Click "Add app" > Web (</>) icon
+4. Register your app
+5. Copy the Firebase configuration object
+
+### 5. Configure Environment Variables
+
+#### Backend (.env)
+
+```env
+PORT=3001
+REDIS_URL=redis://localhost:6379
+JWT_SECRET=your-secret-key-change-in-production
+FRONTEND_URL=http://localhost:3000
+
+# Firebase Admin SDK - paste the entire service account JSON as a string
+FIREBASE_SERVICE_ACCOUNT={"type":"service_account","project_id":"your-project-id",...}
 ```
 
-Verify the database is running:
+#### Frontend (.env.local)
 
-```bash
-docker ps | grep jobportal-postgres
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3001
+
+# Firebase Client SDK Configuration
+NEXT_PUBLIC_FIREBASE_API_KEY=your-api-key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
+NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your-measurement-id
+NEXT_PUBLIC_FIREBASE_DATABASE_URL=https://your-project.firebaseio.com
 ```
 
-You should see the container running on port 5432.
+### 6. Deploy Security Rules
 
-### 2. Install Dependencies
+Deploy Firestore, Storage, and Realtime Database security rules:
 
 ```bash
 cd backend
-npm install
+
+# Login to Firebase
+firebase login
+
+# Initialize Firebase (if not already done)
+firebase init
+
+# Deploy all rules
+npm run security:validate  # Validate rules first
+./scripts/deploy-security-rules.sh
 ```
 
-### 3. Configure Environment
+### 7. Create Firestore Indexes
 
-The `.env` file should already be configured with:
-
-```env
-DATABASE_URL=postgresql://jobportal:jobportal_dev@localhost:5432/jobportal_db
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=jobportal_db
-DB_USER=jobportal
-DB_PASSWORD=jobportal_dev
-```
-
-### 4. Run Database Migrations
-
-Apply all migrations to create the database schema:
+Deploy composite indexes for efficient queries:
 
 ```bash
-npm run migrate:up
+firebase deploy --only firestore:indexes
 ```
 
-This will create all tables with proper indexes and constraints.
+The indexes are defined in `backend/firestore.indexes.json`.
 
-### 5. Seed Development Data
+### 8. Verify Setup
 
-Populate the database with sample data:
+Test the Firebase connection:
 
 ```bash
-npm run seed:dev
+cd backend
+npm run test:firebase
 ```
 
-This creates:
-- 3 sample organizations (TechCorp Inc, StartupHub, InnovateLabs)
-- 6 users (3 candidates, 2 recruiters, 1 admin)
-- 3 candidate profiles with skills and experience
-- 2 recruiter profiles
-- 6 job postings across different levels and locations
+This will verify:
 
-### 6. Verify Setup
+- Firebase Admin SDK initialization
+- Firestore connection
+- Authentication service
+- Storage access
+- Realtime Database connection
 
-You can verify the setup by connecting to the database:
+## Firebase Collections Structure
 
-```bash
-docker exec -it jobportal-postgres psql -U jobportal -d jobportal_db
-```
+### Core Collections
 
-Then run some queries:
-
-```sql
--- Check tables
-\dt
-
--- Count users
-SELECT role, COUNT(*) FROM users GROUP BY role;
-
--- List jobs
-SELECT title, level, location, remote FROM jobs WHERE status = 'active';
-
--- Exit
-\q
-```
-
-## Test Credentials
-
-After seeding, you can use these credentials for testing:
-
-### Candidates
-- Email: `candidate1@example.com` | Password: `password123`
-- Email: `candidate2@example.com` | Password: `password123`
-- Email: `candidate3@example.com` | Password: `password123`
-
-### Recruiters
-- Email: `recruiter1@example.com` | Password: `password123`
-- Email: `recruiter2@example.com` | Password: `password123`
-
-### Admin
-- Email: `admin@example.com` | Password: `password123`
-
-## Database Schema Overview
-
-### Users & Profiles
-- `users` - Core user authentication and info
-- `candidate_profiles` - Candidate skills, experience, education, preferences
-- `recruiter_profiles` - Recruiter info linked to organizations
-- `orgs` - Company/organization information
+- `users` - User authentication and profile data
+- `candidateProfiles` - Candidate skills, experience, education
+- `recruiterProfiles` - Recruiter information
+- `organizations` - Company/organization data
 
 ### Jobs & Applications
+
 - `jobs` - Job postings with search indexes
 - `applications` - Job applications with AI scoring
-- `resumes` - Resume file storage metadata
-- `resume_versions` - Parsed resume data with versioning
+- `resumes` - Resume metadata
+  - `versions` (subcollection) - Resume versions
 
 ### Analytics
+
 - `events` - User activity tracking
-- `metrics_cache` - Pre-calculated analytics metrics
+- `metricsCache` - Pre-calculated analytics
+
+### Realtime Database Structure
+
+```
+/presence/{userId} - User online status
+/notifications/{userId} - Real-time notifications
+/applicationUpdates/{userId} - Application status updates
+```
 
 ## Common Operations
 
-### Reset Database
+### View Data in Console
 
-To start fresh:
+1. Go to Firebase Console
+2. Navigate to Firestore Database or Realtime Database
+3. Browse collections and documents
 
-```bash
-# Rollback all migrations
-npm run migrate:down
+### Query Data Programmatically
 
-# Or drop and recreate (from psql)
-docker exec -it jobportal-postgres psql -U jobportal -d postgres -c "DROP DATABASE IF EXISTS jobportal_db;"
-docker exec -it jobportal-postgres psql -U jobportal -d postgres -c "CREATE DATABASE jobportal_db;"
+```typescript
+import { firestore } from './config/firebase';
 
-# Then run migrations again
-npm run migrate:up
-npm run seed:dev
+// Get all active jobs
+const jobsSnapshot = await firestore.collection('jobs').where('status', '==', 'active').get();
+
+// Get user by ID
+const userDoc = await firestore.collection('users').doc(userId).get();
 ```
 
-### Create New Migration
+### Backup Data
 
 ```bash
-npm run migrate:create add_new_feature
+# Export Firestore data
+firebase firestore:export gs://your-bucket/backups/$(date +%Y%m%d)
+
+# Import Firestore data
+firebase firestore:import gs://your-bucket/backups/20240101
 ```
 
-This creates a new migration file in `src/migrations/`.
-
-### Check Migration Status
+### Test Security Rules
 
 ```bash
-npx node-pg-migrate list
+cd backend
+npm run test:security
 ```
 
 ## Troubleshooting
 
-### Connection Refused
+### Authentication Errors
 
-If you get "connection refused" errors:
-1. Check Docker is running: `docker ps`
-2. Check postgres container is up: `docker-compose ps`
-3. Restart the container: `docker-compose restart postgres`
+If you get "permission denied" errors:
 
-### Permission Denied
+1. Check that Firebase Authentication is enabled
+2. Verify the service account key is correct
+3. Check security rules in Firebase Console
 
-If you get permission errors:
-1. Check the DATABASE_URL in `.env` matches docker-compose.yml
-2. Verify the postgres user has proper permissions
+### Connection Issues
 
-### Migration Errors
+If Firebase won't connect:
 
-If migrations fail:
-1. Check the migration files for syntax errors
-2. Verify the database is empty or in a clean state
-3. Check the logs: `docker-compose logs postgres`
+1. Verify environment variables are set correctly
+2. Check that the service account JSON is valid
+3. Ensure Firebase services are enabled in console
+
+### Security Rules Errors
+
+If security rules fail:
+
+1. Validate rules: `npm run security:validate`
+2. Check Firebase Console for rule errors
+3. Review the rules in `firestore.rules`, `storage.rules`, `database.rules.json`
+
+### Quota Limits
+
+Free tier limits:
+
+- Firestore: 50K reads, 20K writes, 20K deletes per day
+- Storage: 5GB total, 1GB downloads per day
+- Realtime Database: 100 simultaneous connections, 1GB storage
+
+Upgrade to Blaze (pay-as-you-go) for production use.
 
 ## Production Considerations
 
 For production deployment:
 
-1. **Change Credentials**: Update all passwords in environment variables
-2. **Enable SSL**: Configure SSL for database connections
-3. **Backup Strategy**: Set up automated backups
-4. **Connection Pooling**: Already configured in `src/config/database.ts`
-5. **Monitoring**: Add database monitoring and alerting
-6. **Migrations**: Run migrations as part of deployment pipeline
+1. **Security Rules**: Review and tighten security rules
+2. **Indexes**: Ensure all composite indexes are deployed
+3. **Backup Strategy**: Set up automated Firestore exports
+4. **Monitoring**: Enable Firebase Performance Monitoring
+5. **Budget Alerts**: Set up billing alerts in Google Cloud Console
+6. **Environment Separation**: Use separate Firebase projects for dev/staging/prod
+
+## Migration from PostgreSQL
+
+If migrating from PostgreSQL:
+
+1. Export PostgreSQL data:
+
+   ```bash
+   npm run migrate:export
+   ```
+
+2. Import to Firebase:
+
+   ```bash
+   npm run migrate:import
+   ```
+
+3. Verify migration:
+
+   ```bash
+   npm run migrate:verify
+   ```
+
+4. Rollback if needed:
+   ```bash
+   npm run migrate:rollback
+   ```
+
+See `MIGRATION_GUIDE.md` for detailed migration instructions.
 
 ## Additional Resources
 
-- [node-pg-migrate Documentation](https://salsita.github.io/node-pg-migrate/)
-- [PostgreSQL Documentation](https://www.postgresql.org/docs/)
-- [Docker Compose Documentation](https://docs.docker.com/compose/)
+- [Firebase Documentation](https://firebase.google.com/docs)
+- [Firestore Data Model](https://firebase.google.com/docs/firestore/data-model)
+- [Firebase Security Rules](https://firebase.google.com/docs/rules)
+- [Firebase CLI Reference](https://firebase.google.com/docs/cli)

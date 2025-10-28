@@ -28,11 +28,7 @@ function cleanupStore(store: RateLimitStore): void {
 /**
  * Get or create rate limit entry
  */
-function getRateLimitEntry(
-  store: RateLimitStore,
-  key: string,
-  windowMs: number
-): RateLimitEntry {
+function getRateLimitEntry(store: RateLimitStore, key: string, windowMs: number): RateLimitEntry {
   const now = Date.now();
 
   if (!store[key] || store[key].resetTime < now) {
@@ -49,10 +45,7 @@ function getRateLimitEntry(
  * IP-based rate limiter
  * For production, use Redis-based rate limiting
  */
-export function rateLimitByIP(options: {
-  windowMs: number;
-  maxRequests: number;
-}) {
+export function rateLimitByIP(options: { windowMs: number; maxRequests: number }) {
   return (req: Request, res: Response, next: NextFunction): void => {
     const key = req.ip || 'unknown';
     const now = Date.now();
@@ -84,10 +77,7 @@ export function rateLimitByIP(options: {
 
     // Set rate limit headers
     res.setHeader('X-RateLimit-Limit', options.maxRequests.toString());
-    res.setHeader(
-      'X-RateLimit-Remaining',
-      (options.maxRequests - entry.count).toString()
-    );
+    res.setHeader('X-RateLimit-Remaining', (options.maxRequests - entry.count).toString());
     res.setHeader('X-RateLimit-Reset', entry.resetTime.toString());
 
     next();
@@ -97,10 +87,7 @@ export function rateLimitByIP(options: {
 /**
  * User-based rate limiter (requires authentication)
  */
-export function rateLimitByUser(options: {
-  windowMs: number;
-  maxRequests: number;
-}) {
+export function rateLimitByUser(options: { windowMs: number; maxRequests: number }) {
   return (req: Request, res: Response, next: NextFunction): void => {
     const userId = (req as any).user?.id;
 
@@ -139,10 +126,7 @@ export function rateLimitByUser(options: {
 
     // Set rate limit headers
     res.setHeader('X-RateLimit-Limit', options.maxRequests.toString());
-    res.setHeader(
-      'X-RateLimit-Remaining',
-      (options.maxRequests - entry.count).toString()
-    );
+    res.setHeader('X-RateLimit-Remaining', (options.maxRequests - entry.count).toString());
     res.setHeader('X-RateLimit-Reset', entry.resetTime.toString());
 
     next();
@@ -152,11 +136,7 @@ export function rateLimitByUser(options: {
 /**
  * Combined rate limiter (both IP and user)
  */
-export function rateLimiter(options: {
-  windowMs: number;
-  maxRequests: number;
-  byUser?: boolean;
-}) {
+export function rateLimiter(options: { windowMs: number; maxRequests: number; byUser?: boolean }) {
   const ipLimiter = rateLimitByIP(options);
   const userLimiter = options.byUser
     ? rateLimitByUser(options)

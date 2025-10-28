@@ -10,16 +10,19 @@ This directory contains database migrations for the AI Job Portal application.
 ## Running Migrations
 
 ### Apply all pending migrations
+
 ```bash
 npm run migrate:up
 ```
 
 ### Rollback the last migration
+
 ```bash
 npm run migrate:down
 ```
 
 ### Create a new migration
+
 ```bash
 npm run migrate:create <migration-name>
 ```
@@ -33,6 +36,7 @@ npm run seed:dev
 ```
 
 This will create:
+
 - 3 sample organizations
 - 6 sample users (3 candidates, 2 recruiters, 1 admin)
 - 3 candidate profiles with skills and experience
@@ -42,6 +46,7 @@ This will create:
 ### Test Credentials
 
 After seeding, you can login with:
+
 - **Candidate**: `candidate1@example.com` / `password123`
 - **Recruiter**: `recruiter1@example.com` / `password123`
 - **Admin**: `admin@example.com` / `password123`
@@ -62,24 +67,28 @@ After seeding, you can login with:
 ## Database Schema Overview
 
 ### Core Tables
+
 - **users**: Authentication and user management
 - **orgs**: Organizations/companies
 - **candidate_profiles**: Candidate skills, experience, education, preferences
 - **recruiter_profiles**: Recruiter information linked to organizations
 
 ### Job & Application Tables
+
 - **jobs**: Job postings with search indexes on title, location, level, type
 - **applications**: Job applications with AI scoring
 - **resumes**: Resume file storage
 - **resume_versions**: Parsed resume data with versioning
 
 ### Analytics Tables
+
 - **events**: User activity tracking
 - **metrics_cache**: Pre-calculated analytics metrics
 
 ## Indexes
 
 The schema includes indexes on:
+
 - Foreign keys for all relationships
 - Search fields: job title, location, skills
 - Filter fields: job level, type, remote, status

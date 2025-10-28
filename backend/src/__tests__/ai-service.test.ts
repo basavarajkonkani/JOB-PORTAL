@@ -127,25 +127,21 @@ describe('AI Service Integration Tests with Mocked Pollinations', () => {
 
   beforeEach(async () => {
     // Create candidate user
-    const candidateResponse = await request(app)
-      .post('/api/auth/signup')
-      .send({
-        email: 'candidate@example.com',
-        password: 'SecurePass123!',
-        name: 'Test Candidate',
-        role: 'candidate',
-      });
+    const candidateResponse = await request(app).post('/api/auth/signup').send({
+      email: 'candidate@example.com',
+      password: 'SecurePass123!',
+      name: 'Test Candidate',
+      role: 'candidate',
+    });
     candidateToken = candidateResponse.body.accessToken;
 
     // Create recruiter user
-    const recruiterResponse = await request(app)
-      .post('/api/auth/signup')
-      .send({
-        email: 'recruiter@example.com',
-        password: 'SecurePass123!',
-        name: 'Test Recruiter',
-        role: 'recruiter',
-      });
+    const recruiterResponse = await request(app).post('/api/auth/signup').send({
+      email: 'recruiter@example.com',
+      password: 'SecurePass123!',
+      name: 'Test Recruiter',
+      role: 'recruiter',
+    });
     recruiterToken = recruiterResponse.body.accessToken;
 
     // Reset mocks
@@ -154,8 +150,9 @@ describe('AI Service Integration Tests with Mocked Pollinations', () => {
 
   describe('POST /api/ai/fit-summary', () => {
     it('should generate fit summary for candidate-job match', async () => {
-      const mockSummary = 'This candidate is an excellent fit for the position. Their 5 years of TypeScript experience aligns perfectly with the senior role requirements.';
-      
+      const mockSummary =
+        'This candidate is an excellent fit for the position. Their 5 years of TypeScript experience aligns perfectly with the senior role requirements.';
+
       (aiService.generateFitSummary as jest.Mock).mockResolvedValue(mockSummary);
 
       const response = await request(app)
@@ -187,12 +184,10 @@ describe('AI Service Integration Tests with Mocked Pollinations', () => {
     });
 
     it('should reject without authentication', async () => {
-      const response = await request(app)
-        .post('/api/ai/fit-summary')
-        .send({
-          jobData: {},
-          candidateProfile: {},
-        });
+      const response = await request(app).post('/api/ai/fit-summary').send({
+        jobData: {},
+        candidateProfile: {},
+      });
 
       expect(response.status).toBe(401);
     });
@@ -217,8 +212,9 @@ describe('AI Service Integration Tests with Mocked Pollinations', () => {
 
   describe('POST /api/ai/cover-letter', () => {
     it('should generate tailored cover letter', async () => {
-      const mockCoverLetter = 'Dear Hiring Manager,\n\nI am excited to apply for the Senior Software Engineer position. My 5 years of experience with TypeScript and React make me an ideal candidate...';
-      
+      const mockCoverLetter =
+        'Dear Hiring Manager,\n\nI am excited to apply for the Senior Software Engineer position. My 5 years of experience with TypeScript and React make me an ideal candidate...';
+
       (aiService.generateCoverLetter as jest.Mock).mockResolvedValue(mockCoverLetter);
 
       const response = await request(app)
@@ -245,18 +241,16 @@ describe('AI Service Integration Tests with Mocked Pollinations', () => {
 
   describe('POST /api/ai/resume-improve', () => {
     it('should improve resume bullets for ATS', async () => {
-      const mockImprovements = '1. Architected and deployed scalable microservices using TypeScript and Node.js, improving system performance by 40%\n2. Led cross-functional team of 5 engineers in developing React-based dashboard, resulting in 25% increase in user engagement';
-      
+      const mockImprovements =
+        '1. Architected and deployed scalable microservices using TypeScript and Node.js, improving system performance by 40%\n2. Led cross-functional team of 5 engineers in developing React-based dashboard, resulting in 25% increase in user engagement';
+
       (aiService.improveResumeBullets as jest.Mock).mockResolvedValue(mockImprovements);
 
       const response = await request(app)
         .post('/api/ai/resume-improve')
         .set('Authorization', `Bearer ${candidateToken}`)
         .send({
-          bullets: [
-            'Built microservices with TypeScript',
-            'Worked on React dashboard',
-          ],
+          bullets: ['Built microservices with TypeScript', 'Worked on React dashboard'],
         });
 
       expect(response.status).toBe(200);
@@ -279,7 +273,7 @@ describe('AI Service Integration Tests with Mocked Pollinations', () => {
         compensation: { min: 150000, max: 200000, currency: 'USD' },
         benefits: ['Health insurance', '401k', 'Remote work'],
       });
-      
+
       (aiService.generateJD as jest.Mock).mockResolvedValue(mockJD);
 
       const response = await request(app)
@@ -316,7 +310,7 @@ describe('AI Service Integration Tests with Mocked Pollinations', () => {
           concern: 'Limited production experience',
         },
       ]);
-      
+
       (aiService.rankCandidates as jest.Mock).mockResolvedValue(mockRankings);
 
       const response = await request(app)
@@ -356,8 +350,9 @@ describe('AI Service Integration Tests with Mocked Pollinations', () => {
 
   describe('POST /api/ai/screening-questions', () => {
     it('should generate screening questions for candidate', async () => {
-      const mockQuestions = '1. Can you describe your experience with TypeScript generics and advanced types?\n2. How have you optimized React application performance in production?\n3. Tell me about a time you led a technical project from conception to deployment.';
-      
+      const mockQuestions =
+        '1. Can you describe your experience with TypeScript generics and advanced types?\n2. How have you optimized React application performance in production?\n3. Tell me about a time you led a technical project from conception to deployment.';
+
       (aiService.generateScreeningQuestions as jest.Mock).mockResolvedValue(mockQuestions);
 
       const response = await request(app)
@@ -385,8 +380,9 @@ describe('AI Service Integration Tests with Mocked Pollinations', () => {
 
   describe('POST /api/ai/image', () => {
     it('should generate image URL', async () => {
-      const mockImageUrl = 'https://image.pollinations.ai/prompt/professional%20tech%20office?width=1200&height=630&seed=42&nologo=true';
-      
+      const mockImageUrl =
+        'https://image.pollinations.ai/prompt/professional%20tech%20office?width=1200&height=630&seed=42&nologo=true';
+
       (aiService.generateImage as jest.Mock).mockResolvedValue(mockImageUrl);
 
       const response = await request(app)
@@ -409,7 +405,7 @@ describe('AI Service Integration Tests with Mocked Pollinations', () => {
 
     it('should return fallback image on error', async () => {
       const fallbackUrl = 'data:image/svg+xml,%3Csvg...';
-      
+
       (aiService.generateImage as jest.Mock).mockResolvedValue(fallbackUrl);
 
       const response = await request(app)
@@ -428,7 +424,7 @@ describe('AI Service Integration Tests with Mocked Pollinations', () => {
   describe('AI Service Caching', () => {
     it('should cache AI responses', async () => {
       const mockSummary = 'Cached fit summary';
-      
+
       (aiService.generateFitSummary as jest.Mock).mockResolvedValue(mockSummary);
 
       const jobData = { title: 'Engineer' };
@@ -456,9 +452,7 @@ describe('AI Service Integration Tests with Mocked Pollinations', () => {
 
   describe('AI Service Error Handling', () => {
     it('should handle network errors gracefully', async () => {
-      (aiService.generateFitSummary as jest.Mock).mockRejectedValue(
-        new Error('Network error')
-      );
+      (aiService.generateFitSummary as jest.Mock).mockRejectedValue(new Error('Network error'));
 
       const response = await request(app)
         .post('/api/ai/fit-summary')
@@ -473,9 +467,7 @@ describe('AI Service Integration Tests with Mocked Pollinations', () => {
     });
 
     it('should handle timeout errors', async () => {
-      (aiService.generateCoverLetter as jest.Mock).mockRejectedValue(
-        new Error('Request timeout')
-      );
+      (aiService.generateCoverLetter as jest.Mock).mockRejectedValue(new Error('Request timeout'));
 
       const response = await request(app)
         .post('/api/ai/cover-letter')

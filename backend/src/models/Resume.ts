@@ -1,10 +1,13 @@
-import pool from '../config/database';
+import { firestore } from '../config/firebase';
+import { Timestamp } from 'firebase-admin/firestore';
+import logger from '../utils/logger';
 
 export interface Resume {
   id: string;
   userId: string;
   fileUrl: string;
   fileName: string;
+  storagePath: string;
   uploadedAt: Date;
 }
 
@@ -35,46 +38,148 @@ export interface ResumeVersion {
 }
 
 export class ResumeModel {
+  private static collection = firestore.collection('resumes');
+
+  /**
+   * Create a new resume record in Firestore
+   */
   static async create(
     userId: string,
     fileUrl: string,
-    fileName: string
+    fileName: string,
+    storagePath: string
   ): Promise<Resume> {
-    const result = await pool.query(
-      `INSERT INTO resumes (user_id, file_url, file_name)
-       VALUES ($1, $2, $3)
-       RETURNING id, user_id as "userId", file_url as "fileUrl", 
-                 file_name as "fileName", uploaded_at as "uploadedAt"`,
-      [userId, fileUrl, fileName]
-    );
-    return result.rows[0];
+    try {
+      const resumeRef = this.collection.doc();
+
+      const resumeData = {
+        userId,
+        fileUrl,
+        fileName,
+        storagePath,
+        uploadedAt: Timestamp.now(),
+      };
+
+      await resumeRef.set(resumeData);
+
+      logger.info('Resume created in Firestore', {
+        resumeId: resumeRef.id,
+        userId,
+      });
+
+      return {
+        id: resumeRef.id,
+        userId,
+        fileUrl,
+        fileName,
+        storagePath,
+        uploadedAt: resumeData.uploadedAt.toDate(),
+      };
+    } catch (error) {
+      logger.error('Failed to create resume in Firestore', { error, userId });
+      throw error;
+    }
   }
 
+  /**
+   * Find all resumes for a user
+   */
   static async findByUserId(userId: string): Promise<Resume[]> {
-    const result = await pool.query(
-      `SELECT id, user_id as "userId", file_url as "fileUrl", 
-              file_name as "fileName", uploaded_at as "uploadedAt"
-       FROM resumes
-       WHERE user_id = $1
-       ORDER BY uploaded_at DESC`,
-      [userId]
-    );
-    return result.rows;
+    try {
+      const snapshot = await this.collection
+        .where('userId', '==', userId)
+        .orderBy('uploadedAt', 'desc')
+        .get();
+
+      if (snapshot.empty) {
+        return [];
+      }
+
+      return snapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          userId: data.userId,
+          fileUrl: data.fileUrl,
+          fileName: data.fileName,
+          storagePath: data.storagePath,
+          uploadedAt: data.uploadedAt.toDate(),
+        };
+      });
+    } catch (error) {
+      logger.error('Failed to find resumes by userId', { error, userId });
+      throw error;
+    }
   }
 
+  /**
+   * Find a resume by ID
+   */
   static async findById(id: string): Promise<Resume | null> {
-    const result = await pool.query(
-      `SELECT id, user_id as "userId", file_url as "fileUrl", 
-              file_name as "fileName", uploaded_at as "uploadedAt"
-       FROM resumes
-       WHERE id = $1`,
-      [id]
-    );
-    return result.rows[0] || null;
+    try {
+      const doc = await this.collection.doc(id).get();
+
+      if (!doc.exists) {
+        return null;
+      }
+
+      const data = doc.data()!;
+      return {
+        id: doc.id,
+        userId: data.userId,
+        fileUrl: data.fileUrl,
+        fileName: data.fileName,
+        storagePath: data.storagePath,
+        uploadedAt: data.uploadedAt.toDate(),
+      };
+    } catch (error) {
+      logger.error('Failed to find resume by id', { error, id });
+      throw error;
+    }
+  }
+
+  /**
+   * Update resume file URL (e.g., when regenerating signed URL)
+   */
+  static async updateFileUrl(id: string, fileUrl: string): Promise<void> {
+    try {
+      await this.collection.doc(id).update({
+        fileUrl,
+        updatedAt: Timestamp.now(),
+      });
+
+      logger.info('Resume file URL updated', { resumeId: id });
+    } catch (error) {
+      logger.error('Failed to update resume file URL', { error, id });
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a resume record
+   */
+  static async delete(id: string): Promise<void> {
+    try {
+      await this.collection.doc(id).delete();
+      logger.info('Resume deleted from Firestore', { resumeId: id });
+    } catch (error) {
+      logger.error('Failed to delete resume', { error, id });
+      throw error;
+    }
   }
 }
 
 export class ResumeVersionModel {
+  /**
+   * Get the versions subcollection for a resume
+   */
+  private static getVersionsCollection(resumeId: string) {
+    return firestore.collection('resumes').doc(resumeId).collection('versions');
+  }
+
+  /**
+   * Create a new resume version
+   */
   static async create(
     resumeId: string,
     userId: string,
@@ -82,61 +187,165 @@ export class ResumeVersionModel {
     parsedData: ResumeVersion['parsedData'],
     aiSuggestions: string[] | null = null
   ): Promise<ResumeVersion> {
-    // Get the next version number
-    const versionResult = await pool.query(
-      `SELECT COALESCE(MAX(version), 0) + 1 as next_version
-       FROM resume_versions
-       WHERE resume_id = $1`,
-      [resumeId]
-    );
-    const version = versionResult.rows[0].next_version;
+    try {
+      const versionsCollection = this.getVersionsCollection(resumeId);
 
-    const result = await pool.query(
-      `INSERT INTO resume_versions (resume_id, user_id, raw_text, parsed_data, ai_suggestions, version)
-       VALUES ($1, $2, $3, $4, $5, $6)
-       RETURNING id, resume_id as "resumeId", user_id as "userId", 
-                 raw_text as "rawText", parsed_data as "parsedData", 
-                 ai_suggestions as "aiSuggestions", version, created_at as "createdAt"`,
-      [resumeId, userId, rawText, JSON.stringify(parsedData), aiSuggestions, version]
-    );
-    return result.rows[0];
+      // Get the next version number
+      const snapshot = await versionsCollection.orderBy('version', 'desc').limit(1).get();
+
+      const version = snapshot.empty ? 1 : snapshot.docs[0].data().version + 1;
+
+      const versionRef = versionsCollection.doc();
+
+      const versionData = {
+        resumeId,
+        userId,
+        rawText,
+        parsedData,
+        aiSuggestions,
+        version,
+        createdAt: Timestamp.now(),
+      };
+
+      await versionRef.set(versionData);
+
+      logger.info('Resume version created', {
+        versionId: versionRef.id,
+        resumeId,
+        version,
+      });
+
+      return {
+        id: versionRef.id,
+        resumeId,
+        userId,
+        rawText,
+        parsedData,
+        aiSuggestions,
+        version,
+        createdAt: versionData.createdAt.toDate(),
+      };
+    } catch (error) {
+      logger.error('Failed to create resume version', { error, resumeId });
+      throw error;
+    }
   }
 
+  /**
+   * Find all versions for a resume
+   */
   static async findByResumeId(resumeId: string): Promise<ResumeVersion[]> {
-    const result = await pool.query(
-      `SELECT id, resume_id as "resumeId", user_id as "userId", 
-              raw_text as "rawText", parsed_data as "parsedData", 
-              ai_suggestions as "aiSuggestions", version, created_at as "createdAt"
-       FROM resume_versions
-       WHERE resume_id = $1
-       ORDER BY version DESC`,
-      [resumeId]
-    );
-    return result.rows;
+    try {
+      const snapshot = await this.getVersionsCollection(resumeId).orderBy('version', 'desc').get();
+
+      if (snapshot.empty) {
+        return [];
+      }
+
+      return snapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          resumeId: data.resumeId,
+          userId: data.userId,
+          rawText: data.rawText,
+          parsedData: data.parsedData,
+          aiSuggestions: data.aiSuggestions,
+          version: data.version,
+          createdAt: data.createdAt.toDate(),
+        };
+      });
+    } catch (error) {
+      logger.error('Failed to find resume versions', { error, resumeId });
+      throw error;
+    }
   }
 
-  static async findById(id: string): Promise<ResumeVersion | null> {
-    const result = await pool.query(
-      `SELECT id, resume_id as "resumeId", user_id as "userId", 
-              raw_text as "rawText", parsed_data as "parsedData", 
-              ai_suggestions as "aiSuggestions", version, created_at as "createdAt"
-       FROM resume_versions
-       WHERE id = $1`,
-      [id]
-    );
-    return result.rows[0] || null;
+  /**
+   * Find a specific version by ID
+   */
+  static async findById(resumeId: string, versionId: string): Promise<ResumeVersion | null> {
+    try {
+      const doc = await this.getVersionsCollection(resumeId).doc(versionId).get();
+
+      if (!doc.exists) {
+        return null;
+      }
+
+      const data = doc.data()!;
+      return {
+        id: doc.id,
+        resumeId: data.resumeId,
+        userId: data.userId,
+        rawText: data.rawText,
+        parsedData: data.parsedData,
+        aiSuggestions: data.aiSuggestions,
+        version: data.version,
+        createdAt: data.createdAt.toDate(),
+      };
+    } catch (error) {
+      logger.error('Failed to find resume version by id', { error, resumeId, versionId });
+      throw error;
+    }
   }
 
+  /**
+   * Find all versions for a user across all resumes
+   */
   static async findByUserId(userId: string): Promise<ResumeVersion[]> {
-    const result = await pool.query(
-      `SELECT rv.id, rv.resume_id as "resumeId", rv.user_id as "userId", 
-              rv.raw_text as "rawText", rv.parsed_data as "parsedData", 
-              rv.ai_suggestions as "aiSuggestions", rv.version, rv.created_at as "createdAt"
-       FROM resume_versions rv
-       WHERE rv.user_id = $1
-       ORDER BY rv.created_at DESC`,
-      [userId]
-    );
-    return result.rows;
+    try {
+      // First get all resumes for the user
+      const resumes = await ResumeModel.findByUserId(userId);
+
+      // Then get all versions for each resume
+      const allVersions: ResumeVersion[] = [];
+
+      for (const resume of resumes) {
+        const versions = await this.findByResumeId(resume.id);
+        allVersions.push(...versions);
+      }
+
+      // Sort by creation date descending
+      allVersions.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+
+      return allVersions;
+    } catch (error) {
+      logger.error('Failed to find resume versions by userId', { error, userId });
+      throw error;
+    }
+  }
+
+  /**
+   * Update AI suggestions for a version
+   */
+  static async updateAiSuggestions(
+    resumeId: string,
+    versionId: string,
+    aiSuggestions: string[]
+  ): Promise<void> {
+    try {
+      await this.getVersionsCollection(resumeId).doc(versionId).update({
+        aiSuggestions,
+        updatedAt: Timestamp.now(),
+      });
+
+      logger.info('Resume version AI suggestions updated', { resumeId, versionId });
+    } catch (error) {
+      logger.error('Failed to update AI suggestions', { error, resumeId, versionId });
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a resume version
+   */
+  static async delete(resumeId: string, versionId: string): Promise<void> {
+    try {
+      await this.getVersionsCollection(resumeId).doc(versionId).delete();
+      logger.info('Resume version deleted', { resumeId, versionId });
+    } catch (error) {
+      logger.error('Failed to delete resume version', { error, resumeId, versionId });
+      throw error;
+    }
   }
 }

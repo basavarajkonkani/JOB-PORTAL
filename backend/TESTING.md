@@ -10,7 +10,7 @@ Comprehensive integration tests have been implemented for all critical flows in 
 
 1. **`src/__tests__/auth.test.ts`** - Authentication Flow Tests
    - User signup with validation
-   - User signin with credentials  
+   - User signin with credentials
    - Token refresh mechanism
    - Complete auth flow integration
 
@@ -88,6 +88,7 @@ Comprehensive integration tests have been implemented for all critical flows in 
 To ensure tests are fast, reliable, and don't depend on external services:
 
 ### 1. S3 Upload Mock
+
 ```typescript
 jest.mock('../config/s3', () => ({
   __esModule: true,
@@ -99,6 +100,7 @@ jest.mock('../config/s3', () => ({
 ```
 
 ### 2. Resume Parser Mock
+
 ```typescript
 jest.mock('../utils/resumeParser', () => ({
   parseResume: jest.fn().mockResolvedValue({
@@ -113,6 +115,7 @@ jest.mock('../utils/resumeParser', () => ({
 ```
 
 ### 3. AI Service Mock
+
 ```typescript
 jest.mock('../services/aiService', () => ({
   generateText: jest.fn(),
@@ -123,6 +126,7 @@ jest.mock('../services/aiService', () => ({
 ```
 
 ### 4. Rate Limiter Mock
+
 ```typescript
 jest.mock('../middleware/rateLimiter', () => ({
   rateLimiter: () => (req, res, next) => next(),
@@ -134,6 +138,7 @@ jest.mock('../middleware/rateLimiter', () => ({
 The integration tests cover:
 
 ### Authentication (12 tests)
+
 - ✅ Successful signup
 - ✅ Signup validation errors
 - ✅ Duplicate email prevention
@@ -146,6 +151,7 @@ The integration tests cover:
 - ✅ Complete auth flow
 
 ### Job Search & Applications (20+ tests)
+
 - ✅ Public job search
 - ✅ Filter by title, level, location, remote
 - ✅ Pagination
@@ -160,6 +166,7 @@ The integration tests cover:
 - ✅ Complete candidate flow
 
 ### Resume Processing (10+ tests)
+
 - ✅ Resume upload
 - ✅ Resume parsing
 - ✅ Resume version management
@@ -169,6 +176,7 @@ The integration tests cover:
 - ✅ Complete resume workflow
 
 ### AI Services (15+ tests)
+
 - ✅ Fit summary generation
 - ✅ Cover letter generation
 - ✅ Resume improvement
@@ -181,6 +189,7 @@ The integration tests cover:
 - ✅ Fallback behavior
 
 ### Recruiter Workflows (25+ tests)
+
 - ✅ AI-powered JD creation
 - ✅ Manual JD creation
 - ✅ Job updates
@@ -197,6 +206,7 @@ The integration tests cover:
 ## Running the Tests
 
 ### Prerequisites
+
 1. PostgreSQL running on localhost:5432
 2. Redis running on localhost:6379
 3. Database migrations applied
@@ -229,12 +239,16 @@ Each test suite ensures proper isolation:
 ## Key Features
 
 ### 1. Realistic Test Scenarios
+
 Tests simulate real user workflows:
+
 - Candidate: signup → upload resume → search jobs → apply → track
 - Recruiter: signup → create JD with AI → publish → view candidates → rank
 
 ### 2. Comprehensive Validation
+
 Tests verify:
+
 - HTTP status codes
 - Response body structure
 - Data persistence
@@ -243,14 +257,18 @@ Tests verify:
 - Edge cases
 
 ### 3. Mocked External Dependencies
+
 All external services are mocked:
+
 - S3 file uploads
 - Resume parsing
 - AI API calls
 - Rate limiting
 
 ### 4. Error Handling
+
 Tests verify graceful degradation:
+
 - AI service failures
 - Invalid inputs
 - Authorization failures

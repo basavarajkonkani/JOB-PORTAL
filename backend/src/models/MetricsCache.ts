@@ -1,4 +1,5 @@
-import pool from '../config/database';
+import { firestore } from '../config/firebase';
+import { Timestamp } from 'firebase-admin/firestore';
 
 export interface MetricsCache {
   id: string;
@@ -17,23 +18,32 @@ export interface MetricsCacheInput {
 }
 
 export class MetricsCacheModel {
+  private static collection = firestore.collection('metricsCache');
+
   static async upsert(data: MetricsCacheInput): Promise<MetricsCache> {
     const { metricName, metricValue, periodStart, periodEnd } = data;
 
-    const result = await pool.query(
-      `INSERT INTO metrics_cache (metric_name, metric_value, period_start, period_end)
-       VALUES ($1, $2, $3, $4)
-       ON CONFLICT (metric_name, period_start, period_end)
-       DO UPDATE SET
-         metric_value = EXCLUDED.metric_value,
-         calculated_at = CURRENT_TIMESTAMP
-       RETURNING id, metric_name as "metricName", metric_value as "metricValue",
-                 period_start as "periodStart", period_end as "periodEnd",
-                 calculated_at as "calculatedAt"`,
-      [metricName, JSON.stringify(metricValue), periodStart, periodEnd]
-    );
+    // Create a unique ID based on metric name and period
+    const docId = `${metricName}_${periodStart.getTime()}_${periodEnd.getTime()}`;
 
-    return result.rows[0];
+    const docData = {
+      metricName,
+      metricValue,
+      periodStart: Timestamp.fromDate(periodStart),
+      periodEnd: Timestamp.fromDate(periodEnd),
+      calculatedAt: Timestamp.now(),
+    };
+
+    await this.collection.doc(docId).set(docData, { merge: true });
+
+    return {
+      id: docId,
+      metricName,
+      metricValue,
+      periodStart,
+      periodEnd,
+      calculatedAt: new Date(),
+    };
   }
 
   static async findByName(
@@ -41,49 +51,62 @@ export class MetricsCacheModel {
     periodStart?: Date,
     periodEnd?: Date
   ): Promise<MetricsCache | null> {
-    let query = `
-      SELECT id, metric_name as "metricName", metric_value as "metricValue",
-             period_start as "periodStart", period_end as "periodEnd",
-             calculated_at as "calculatedAt"
-      FROM metrics_cache
-      WHERE metric_name = $1
-    `;
-    const params: any[] = [metricName];
+    let query = this.collection.where('metricName', '==', metricName);
 
     if (periodStart) {
-      params.push(periodStart);
-      query += ` AND period_start = $${params.length}`;
+      query = query.where('periodStart', '==', Timestamp.fromDate(periodStart));
     }
 
     if (periodEnd) {
-      params.push(periodEnd);
-      query += ` AND period_end = $${params.length}`;
+      query = query.where('periodEnd', '==', Timestamp.fromDate(periodEnd));
     }
 
-    query += ' ORDER BY calculated_at DESC LIMIT 1';
+    const snapshot = await query.orderBy('calculatedAt', 'desc').limit(1).get();
 
-    const result = await pool.query(query, params);
-    return result.rows[0] || null;
+    if (snapshot.empty) {
+      return null;
+    }
+
+    const doc = snapshot.docs[0];
+    const data = doc.data();
+
+    return {
+      id: doc.id,
+      metricName: data.metricName,
+      metricValue: data.metricValue,
+      periodStart: data.periodStart.toDate(),
+      periodEnd: data.periodEnd.toDate(),
+      calculatedAt: data.calculatedAt.toDate(),
+    };
   }
 
   static async findAll(): Promise<MetricsCache[]> {
-    const result = await pool.query(
-      `SELECT id, metric_name as "metricName", metric_value as "metricValue",
-              period_start as "periodStart", period_end as "periodEnd",
-              calculated_at as "calculatedAt"
-       FROM metrics_cache
-       ORDER BY calculated_at DESC`
-    );
+    const snapshot = await this.collection.orderBy('calculatedAt', 'desc').get();
 
-    return result.rows;
+    return snapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        metricName: data.metricName,
+        metricValue: data.metricValue,
+        periodStart: data.periodStart.toDate(),
+        periodEnd: data.periodEnd.toDate(),
+        calculatedAt: data.calculatedAt.toDate(),
+      };
+    });
   }
 
   static async deleteOlderThan(date: Date): Promise<number> {
-    const result = await pool.query(
-      'DELETE FROM metrics_cache WHERE calculated_at < $1',
-      [date]
-    );
+    const snapshot = await this.collection
+      .where('calculatedAt', '<', Timestamp.fromDate(date))
+      .get();
 
-    return result.rowCount || 0;
+    const batch = firestore.batch();
+    snapshot.docs.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+
+    await batch.commit();
+    return snapshot.size;
   }
 }

@@ -1,5 +1,9 @@
-import express, { Request, Response } from 'express';
-import { authenticate, authenticateOptional } from '../middleware/auth';
+import express, { Response } from 'express';
+import {
+  authenticateFirebase,
+  authenticateFirebaseOptional,
+  AuthRequest,
+} from '../middleware/firebaseAuth';
 import { AnalyticsService, EventType } from '../services/analyticsService';
 
 const router = express.Router();
@@ -8,7 +12,7 @@ const router = express.Router();
  * POST /api/analytics/event
  * Track an analytics event
  */
-router.post('/event', authenticateOptional, async (req: Request, res: Response) => {
+router.post('/event', authenticateFirebaseOptional, async (req: AuthRequest, res: Response) => {
   try {
     const { eventType, properties = {} } = req.body;
 
@@ -52,7 +56,7 @@ router.post('/event', authenticateOptional, async (req: Request, res: Response) 
  * GET /api/analytics/metrics
  * Get aggregated metrics (admin only)
  */
-router.get('/metrics', authenticate, async (req: Request, res: Response) => {
+router.get('/metrics', authenticateFirebase, async (req: AuthRequest, res: Response) => {
   try {
     // Check if user is admin
     if (req.user?.role !== 'admin') {
@@ -67,9 +71,7 @@ router.get('/metrics', authenticate, async (req: Request, res: Response) => {
       ? new Date(req.query.startDate as string)
       : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000); // Default: last 30 days
 
-    const endDate = req.query.endDate
-      ? new Date(req.query.endDate as string)
-      : new Date(); // Default: now
+    const endDate = req.query.endDate ? new Date(req.query.endDate as string) : new Date(); // Default: now
 
     // Validate dates
     if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
@@ -105,8 +107,8 @@ router.get('/metrics', authenticate, async (req: Request, res: Response) => {
  */
 router.get(
   '/metrics/:metricName',
-  authenticate,
-  async (req: Request, res: Response) => {
+  authenticateFirebase,
+  async (req: AuthRequest, res: Response) => {
     try {
       // Check if user is admin
       if (req.user?.role !== 'admin') {
@@ -119,13 +121,9 @@ router.get(
       const { metricName } = req.params;
 
       // Parse date range from query params
-      const startDate = req.query.startDate
-        ? new Date(req.query.startDate as string)
-        : undefined;
+      const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
 
-      const endDate = req.query.endDate
-        ? new Date(req.query.endDate as string)
-        : undefined;
+      const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
 
       // Get cached metric
       const cachedMetric = await AnalyticsService.getCachedMetrics(

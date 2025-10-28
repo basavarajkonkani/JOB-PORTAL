@@ -24,10 +24,7 @@ const BASE_DELAY = 1000; // 1 second
  * Generate a hash for caching purposes
  */
 function generateCacheKey(prefix: string, data: any): string {
-  const hash = crypto
-    .createHash('sha256')
-    .update(JSON.stringify(data))
-    .digest('hex');
+  const hash = crypto.createHash('sha256').update(JSON.stringify(data)).digest('hex');
   return `${prefix}:${hash}`;
 }
 
@@ -121,11 +118,7 @@ async function getCachedValue(key: string): Promise<string | null> {
 /**
  * Set cached value in Redis
  */
-async function setCachedValue(
-  key: string,
-  value: string,
-  ttlSeconds: number
-): Promise<void> {
+async function setCachedValue(key: string, value: string, ttlSeconds: number): Promise<void> {
   try {
     await redisClient.setEx(key, ttlSeconds, value);
   } catch (error) {
@@ -164,7 +157,7 @@ async function callPollinationsText(
   const response = await fetch(url.toString(), {
     method: 'GET',
     headers: {
-      'Accept': 'text/plain',
+      Accept: 'text/plain',
     },
   });
 
@@ -226,7 +219,7 @@ export async function generateText(
     // Check if we have a cached fallback (even if expired)
     const fallbackKey = `${cacheKey}:fallback`;
     const fallback = await getCachedValue(fallbackKey);
-    
+
     if (fallback) {
       ErrorLogger.logWarning('Using expired cached result as fallback', {
         cacheKey,
@@ -238,9 +231,10 @@ export async function generateText(
     }
 
     // No fallback available
-    const fallbackMessage = options.fallbackMessage || 
+    const fallbackMessage =
+      options.fallbackMessage ||
       'AI service is currently unavailable. Please try again later or enter content manually.';
-    
+
     throw ErrorFactory.aiServiceError(fallbackMessage);
   }
 }
@@ -265,7 +259,7 @@ export function generateImageUrl(
   const encodedPrompt = encodeURIComponent(prompt);
   const baseUrl = 'https://image.pollinations.ai/prompt';
   const url = new URL(`${baseUrl}/${encodedPrompt}`);
-  
+
   url.searchParams.append('width', width.toString());
   url.searchParams.append('height', height.toString());
   url.searchParams.append('seed', seed.toString());
@@ -279,7 +273,8 @@ export function generateImageUrl(
 /**
  * Default placeholder image URL
  */
-export const DEFAULT_PLACEHOLDER_IMAGE = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630"%3E%3Crect fill="%234F46E5" width="1200" height="630"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="48" fill="white"%3EJob Opportunity%3C/text%3E%3C/svg%3E';
+export const DEFAULT_PLACEHOLDER_IMAGE =
+  'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630"%3E%3Crect fill="%234F46E5" width="1200" height="630"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="48" fill="white"%3EJob Opportunity%3C/text%3E%3C/svg%3E';
 
 /**
  * Generate and cache image URL with fallback support
@@ -324,7 +319,7 @@ export async function generateImage(
     ErrorLogger.logWarning('Using fallback image due to AI service error', {
       fallbackUrl,
     });
-    
+
     return fallbackUrl;
   }
 }
