@@ -17,49 +17,60 @@ export async function uploadFileToStorage(
   folder: string = 'resumes'
 ): Promise<{ fileUrl: string; storagePath: string }> {
   try {
-    const bucket = storage.bucket();
+    logger.info('Starting file upload (Firestore-based storage)', {
+      userId,
+      folder,
+      fileName: file.originalname,
+      fileSize: file.size,
+      mimeType: file.mimetype,
+    });
 
-    // Generate unique file name
+    // Generate unique file ID
     const fileExtension = path.extname(file.originalname);
     const uniqueFileName = `${crypto.randomUUID()}${fileExtension}`;
     const storagePath = `${folder}/${userId}/${uniqueFileName}`;
 
-    // Create file reference
-    const fileUpload = bucket.file(storagePath);
+    // Convert file to base64
+    const base64Content = file.buffer.toString('base64');
+    
+    // Store file metadata and content in Firestore
+    const { firestore } = await import('../config/firebase');
+    const fileDoc = {
+      userId,
+      originalName: file.originalname,
+      mimeType: file.mimetype,
+      size: file.size,
+      storagePath,
+      content: base64Content,
+      uploadedAt: new Date().toISOString(),
+    };
 
-    // Upload file with metadata
-    await fileUpload.save(file.buffer, {
-      metadata: {
-        contentType: file.mimetype,
-        metadata: {
-          originalName: file.originalname,
-          uploadedBy: userId,
-          uploadedAt: new Date().toISOString(),
-        },
-      },
-    });
+    // Save to Firestore collection 'file_storage'
+    await firestore.collection('file_storage').doc(uniqueFileName).set(fileDoc);
 
-    logger.info('File uploaded to Firebase Storage', {
+    logger.info('File stored in Firestore successfully', {
       storagePath,
       userId,
       originalName: file.originalname,
     });
 
-    // Generate signed URL (valid for 1 year)
-    const [url] = await fileUpload.getSignedUrl({
-      action: 'read',
-      expires: Date.now() + 365 * 24 * 60 * 60 * 1000, // 1 year
-    });
+    // Return a data URL that can be used to access the file
+    const fileUrl = `data:${file.mimetype};base64,${base64Content}`;
 
     return {
-      fileUrl: url,
+      fileUrl,
       storagePath,
     };
   } catch (error) {
-    logger.error('Failed to upload file to Firebase Storage', {
-      error,
+    logger.error('Failed to upload file to Firestore', {
+      error: error instanceof Error ? {
+        message: error.message,
+        stack: error.stack,
+        name: error.name,
+      } : error,
       userId,
       folder,
+      fileName: file?.originalname,
     });
     throw new Error(
       `File upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`
@@ -74,24 +85,23 @@ export async function uploadFileToStorage(
  */
 export async function deleteFileFromStorage(storagePath: string): Promise<boolean> {
   try {
-    const bucket = storage.bucket();
-    const file = bucket.file(storagePath);
-
-    // Check if file exists
-    const [exists] = await file.exists();
-
-    if (!exists) {
-      logger.warn('File not found in storage', { storagePath });
+    // Extract file ID from storage path
+    const fileId = storagePath.split('/').pop()?.replace(/\.[^/.]+$/, '');
+    
+    if (!fileId) {
+      logger.warn('Invalid storage path', { storagePath });
       return false;
     }
 
-    // Delete the file
-    await file.delete();
+    const { firestore } = await import('../config/firebase');
+    
+    // Delete from Firestore
+    await firestore.collection('file_storage').doc(fileId).delete();
 
-    logger.info('File deleted from Firebase Storage', { storagePath });
+    logger.info('File deleted from Firestore', { storagePath });
     return true;
   } catch (error) {
-    logger.error('Failed to delete file from Firebase Storage', {
+    logger.error('Failed to delete file from Firestore', {
       error,
       storagePath,
     });

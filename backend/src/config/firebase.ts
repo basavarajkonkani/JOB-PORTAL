@@ -38,7 +38,7 @@ export function initializeFirebase(): void {
     // Initialize Firebase Admin SDK
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
-      storageBucket: process.env.FIREBASE_STORAGE_BUCKET || 'jobportal-7918a.firebasestorage.app',
+      storageBucket: process.env.FIREBASE_STORAGE_BUCKET || 'jobportal-7918a.appspot.com',
       databaseURL:
         process.env.FIREBASE_DATABASE_URL || 'https://jobportal-7918a-default-rtdb.firebaseio.com',
     });

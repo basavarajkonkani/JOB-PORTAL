@@ -98,7 +98,15 @@ router.post(
         },
       });
     } catch (error) {
-      logger.error('Error uploading resume', { error });
+      logger.error('Error uploading resume', {
+        error: error instanceof Error ? {
+          message: error.message,
+          stack: error.stack,
+          name: error.name,
+        } : error,
+        userId: req.user?.userId,
+        fileName: req.file?.originalname,
+      });
 
       if (error instanceof Error && error.message.includes('Invalid file type')) {
         res.status(400).json({
@@ -110,7 +118,8 @@ router.post(
 
       res.status(500).json({
         code: 'STORAGE_ERROR',
-        message: 'Failed to upload resume',
+        message: error instanceof Error ? error.message : 'Failed to upload resume',
+        details: process.env.NODE_ENV === 'development' && error instanceof Error ? error.stack : undefined,
       });
     }
   }
@@ -174,8 +183,8 @@ router.post(
         return;
       }
 
-      // Parse resume
-      const { rawText, parsedData } = await parseResume(resume.fileUrl, mimeType);
+      // Parse resume using storage path instead of URL
+      const { rawText, parsedData } = await parseResume(resume.storagePath, mimeType);
 
       // Create resume version
       const version = await ResumeVersionModel.create(resumeId, userId, rawText, parsedData);

@@ -37,18 +37,28 @@ export async function authenticateFirebase(
     const sessionKey = `firebase:session:${idToken.substring(0, 20)}`; // Use token prefix as key
 
     try {
-      // Try to get cached session
-      const cachedSession = await redisClient.get(sessionKey);
+      // Try to get cached session (skip if Redis is not connected)
+      let cachedSession: string | null = null;
+      try {
+        if (redisClient.isOpen) {
+          cachedSession = await redisClient.get(sessionKey);
+        }
+      } catch (cacheError) {
+        console.warn('Redis cache read failed, continuing without cache:', cacheError);
+      }
 
       if (cachedSession) {
         // Use cached session
+        console.log('Using cached session for user');
         req.user = JSON.parse(cachedSession);
         next();
         return;
       }
 
       // Verify Firebase ID token
+      console.log('Verifying Firebase token...');
       const decodedToken = await auth.verifyIdToken(idToken);
+      console.log('Token verified successfully for user:', decodedToken.uid);
 
       // Extract user information from decoded token
       req.user = {
@@ -57,17 +67,25 @@ export async function authenticateFirebase(
         role: (decodedToken.role as 'candidate' | 'recruiter' | 'admin') || 'candidate',
       };
 
-      // Cache the session for 30 minutes
+      // Cache the session for 30 minutes (skip if Redis is not connected)
       try {
-        await redisClient.setEx(sessionKey, SESSION_CACHE_TTL, JSON.stringify(req.user));
+        if (redisClient.isOpen) {
+          await redisClient.setEx(sessionKey, SESSION_CACHE_TTL, JSON.stringify(req.user));
+        }
       } catch (cacheError) {
-        console.error('Failed to cache Firebase session:', cacheError);
+        console.warn('Failed to cache Firebase session:', cacheError);
         // Continue without caching
       }
 
       next();
     } catch (error: any) {
       // Handle Firebase-specific authentication errors
+      console.error('Firebase authentication error details:', {
+        code: error.code,
+        message: error.message,
+        stack: error.stack?.split('\n')[0],
+      });
+
       if (error.code === 'auth/id-token-expired') {
         res.status(401).json({
           code: 'UNAUTHORIZED',
@@ -96,7 +114,7 @@ export async function authenticateFirebase(
       console.error('Firebase authentication error:', error);
       res.status(401).json({
         code: 'UNAUTHORIZED',
-        message: 'Authentication failed',
+        message: `Authentication failed: ${error.message || 'Unknown error'}`,
       });
       return;
     }

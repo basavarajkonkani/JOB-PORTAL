@@ -1,6 +1,6 @@
 import mammoth from 'mammoth';
-import { GetObjectCommand } from '@aws-sdk/client-s3';
-import s3Client, { S3_BUCKET_NAME } from '../config/s3';
+import { storage } from '../config/firebase';
+import logger from './logger';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pdfParse = require('pdf-parse');
@@ -39,30 +39,33 @@ async function extractTextFromDOCX(buffer: Buffer): Promise<string> {
 }
 
 /**
- * Download file from S3
+ * Download file from Firebase Cloud Storage
  */
-async function downloadFileFromS3(fileUrl: string): Promise<Buffer> {
-  // Extract key from URL
-  const url = new URL(fileUrl);
-  const key = url.pathname.substring(1); // Remove leading slash
+async function downloadFileFromStorage(storagePath: string): Promise<Buffer> {
+  try {
+    const bucket = storage.bucket();
+    const file = bucket.file(storagePath);
 
-  const command = new GetObjectCommand({
-    Bucket: S3_BUCKET_NAME,
-    Key: key,
-  });
+    // Check if file exists
+    const [exists] = await file.exists();
+    if (!exists) {
+      throw new Error(`File not found in storage: ${storagePath}`);
+    }
 
-  const response = await s3Client.send(command);
+    // Download file content
+    const [buffer] = await file.download();
 
-  if (!response.Body) {
-    throw new Error('No file content received from S3');
+    logger.info('File downloaded from Firebase Storage', { storagePath });
+    return buffer;
+  } catch (error) {
+    logger.error('Failed to download file from Firebase Storage', {
+      error,
+      storagePath,
+    });
+    throw new Error(
+      `File download failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
   }
-
-  // Convert stream to buffer
-  const chunks: Uint8Array[] = [];
-  for await (const chunk of response.Body as any) {
-    chunks.push(chunk);
-  }
-  return Buffer.concat(chunks);
 }
 
 /**
@@ -237,12 +240,12 @@ function extractStructuredData(text: string): ParsedResumeData {
  * Parse resume file and extract structured data
  */
 export async function parseResume(
-  fileUrl: string,
+  storagePath: string,
   mimeType: string
 ): Promise<{ rawText: string; parsedData: ParsedResumeData }> {
   try {
-    // Download file from S3
-    const buffer = await downloadFileFromS3(fileUrl);
+    // Download file from Firebase Cloud Storage
+    const buffer = await downloadFileFromStorage(storagePath);
 
     // Extract text based on file type
     let rawText: string;
@@ -259,12 +262,19 @@ export async function parseResume(
     // Extract structured data
     const parsedData = extractStructuredData(rawText);
 
+    logger.info('Resume parsed successfully', {
+      storagePath,
+      skillsCount: parsedData.skills.length,
+      experienceCount: parsedData.experience.length,
+      educationCount: parsedData.education.length,
+    });
+
     return {
       rawText,
       parsedData,
     };
   } catch (error) {
-    console.error('Error parsing resume:', error);
+    logger.error('Error parsing resume:', { error, storagePath });
     throw error;
   }
 }
