@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import redisClient from '../config/redis';
 import { ErrorFactory, ErrorLogger } from '../utils/errors';
+import logger from '../utils/logger';
 
 // Circuit breaker state
 interface CircuitBreakerState {
@@ -54,7 +55,7 @@ function recordFailure(): void {
 
   if (circuitBreaker.failures >= CIRCUIT_BREAKER_THRESHOLD) {
     circuitBreaker.state = 'OPEN';
-    console.error('Circuit breaker opened due to repeated failures');
+    logger.error('Circuit breaker opened due to repeated failures');
   }
 }
 
@@ -89,11 +90,10 @@ async function retryWithBackoff<T>(
       return result;
     } catch (error) {
       lastError = error as Error;
-      console.error(`Attempt ${i + 1} failed:`, error);
+      logger.error(`Attempt ${i + 1} failed:`, error);
 
       if (i < retries - 1) {
         const delay = BASE_DELAY * Math.pow(2, i);
-        console.log(`Retrying in ${delay}ms...`);
         await sleep(delay);
       }
     }
@@ -110,7 +110,7 @@ async function getCachedValue(key: string): Promise<string | null> {
   try {
     return await redisClient.get(key);
   } catch (error) {
-    console.error('Redis get error:', error);
+    logger.error('Redis get error:', error);
     return null;
   }
 }
@@ -122,7 +122,7 @@ async function setCachedValue(key: string, value: string, ttlSeconds: number): P
   try {
     await redisClient.setEx(key, ttlSeconds, value);
   } catch (error) {
-    console.error('Redis set error:', error);
+    logger.error('Redis set error:', error);
   }
 }
 
@@ -195,7 +195,6 @@ export async function generateText(
   // Try to get from cache
   const cached = await getCachedValue(cacheKey);
   if (cached) {
-    console.log('Returning cached AI response');
     return cached;
   }
 
@@ -295,7 +294,6 @@ export async function generateImage(
   // Try to get from cache
   const cached = await getCachedValue(cacheKey);
   if (cached) {
-    console.log('Returning cached image URL');
     return cached;
   }
 

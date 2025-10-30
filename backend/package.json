@@ -21,7 +21,8 @@
     "migrate:rollback": "ts-node src/scripts/rollback-migration.ts",
     "migrate:test": "jest --runInBand migration-scripts.test.ts",
     "test:load": "jest --runInBand load-testing.test.ts --verbose",
-    "test:load:report": "./scripts/run-load-tests.sh"
+    "test:load:report": "./scripts/run-load-tests.sh",
+    "test:resume-endpoints": "ts-node src/scripts/test-resume-endpoints.ts"
   },
   "keywords": [],
   "author": "",

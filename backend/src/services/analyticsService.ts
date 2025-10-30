@@ -1,5 +1,6 @@
 import { EventModel, EventInput } from '../models/Event';
 import { MetricsCacheModel } from '../models/MetricsCache';
+import logger from '../utils/logger';
 
 // Event types
 export enum EventType {
@@ -48,7 +49,7 @@ export class AnalyticsService {
     try {
       await EventModel.create(eventData);
     } catch (error) {
-      console.error('Failed to track event:', error);
+      logger.error('Failed to track event:', error);
       // Don't throw - analytics failures shouldn't break user flows
     }
   }

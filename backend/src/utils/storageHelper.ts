@@ -85,20 +85,22 @@ export async function uploadFileToStorage(
  */
 export async function deleteFileFromStorage(storagePath: string): Promise<boolean> {
   try {
-    // Extract file ID from storage path
-    const fileId = storagePath.split('/').pop()?.replace(/\.[^/.]+$/, '');
-    
-    if (!fileId) {
+    // Extract file ID from storage path (e.g., "resumes/userId/uuid.pdf" -> "uuid")
+    const fileName = storagePath.split('/').pop();
+    if (!fileName) {
       logger.warn('Invalid storage path', { storagePath });
       return false;
     }
+    
+    // Remove file extension to get the document ID
+    const fileId = fileName.replace(/\.[^/.]+$/, '');
 
     const { firestore } = await import('../config/firebase');
     
     // Delete from Firestore
     await firestore.collection('file_storage').doc(fileId).delete();
 
-    logger.info('File deleted from Firestore', { storagePath });
+    logger.info('File deleted from Firestore', { storagePath, fileId });
     return true;
   } catch (error) {
     logger.error('Failed to delete file from Firestore', {

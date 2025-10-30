@@ -77,7 +77,6 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
     try {
       const cached = await redisClient.get(cacheKey);
       if (cached) {
-        console.log('Returning cached job search results');
         res.status(200).json(JSON.parse(cached));
         return;
       }

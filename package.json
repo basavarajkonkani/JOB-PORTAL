@@ -12,8 +12,12 @@
     "dev:backend": "npm run dev --workspace=backend",
     "dev:frontend": "npm run dev --workspace=frontend",
     "build": "npm run build --workspaces",
+    "build:clean": "rm -rf backend/dist frontend/.next frontend/test-results",
     "lint": "npm run lint --workspaces",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "cleanup": "./cleanup-project.sh",
+    "cleanup:code": "./cleanup-code.sh",
+    "optimize:images": "./optimize-images.sh",
     "prepare": "husky install"
   },
   "devDependencies": {

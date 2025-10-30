@@ -39,27 +39,49 @@ async function extractTextFromDOCX(buffer: Buffer): Promise<string> {
 }
 
 /**
- * Download file from Firebase Cloud Storage
+ * Download file from Firestore-based storage (temporary solution)
  */
 async function downloadFileFromStorage(storagePath: string): Promise<Buffer> {
   try {
-    const bucket = storage.bucket();
-    const file = bucket.file(storagePath);
+    // Extract file ID from storage path (e.g., "resumes/userId/uuid.pdf" -> "uuid")
+    const fileName = storagePath.split('/').pop();
+    if (!fileName) {
+      throw new Error(`Invalid storage path: ${storagePath}`);
+    }
+    
+    // Remove file extension to get the document ID
+    const fileId = fileName.replace(/\.[^/.]+$/, '');
 
-    // Check if file exists
-    const [exists] = await file.exists();
-    if (!exists) {
-      throw new Error(`File not found in storage: ${storagePath}`);
+    // Import firestore dynamically to avoid circular dependencies
+    const { firestore } = await import('../config/firebase');
+    
+    // Get file from Firestore
+    const fileDoc = await firestore.collection('file_storage').doc(fileId).get();
+    
+    if (!fileDoc.exists) {
+      throw new Error(`File not found in storage: ${storagePath} (fileId: ${fileId})`);
     }
 
-    // Download file content
-    const [buffer] = await file.download();
+    const fileData = fileDoc.data();
+    if (!fileData || !fileData.content) {
+      throw new Error(`File content not found: ${storagePath}`);
+    }
 
-    logger.info('File downloaded from Firebase Storage', { storagePath });
+    // Convert base64 back to buffer
+    const buffer = Buffer.from(fileData.content, 'base64');
+
+    logger.info('File downloaded from Firestore storage', { 
+      storagePath, 
+      fileId,
+      bufferSize: buffer.length 
+    });
     return buffer;
   } catch (error) {
-    logger.error('Failed to download file from Firebase Storage', {
-      error,
+    logger.error('Failed to download file from Firestore storage', {
+      error: error instanceof Error ? {
+        message: error.message,
+        stack: error.stack,
+      } : error,
       storagePath,
     });
     throw new Error(

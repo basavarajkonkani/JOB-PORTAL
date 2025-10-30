@@ -4,6 +4,7 @@ import { validateSignupData, validateSigninData } from '../utils/validation';
 import { rateLimiter } from '../middleware/rateLimiter';
 import { authenticateFirebase, AuthRequest } from '../middleware/firebaseAuth';
 import { Timestamp } from 'firebase-admin/firestore';
+import logger from '../utils/logger';
 
 const router = Router();
 
@@ -83,7 +84,7 @@ router.post('/signup', authRateLimiter, async (req: Request, res: Response): Pro
       message: 'Account created successfully. Please sign in to continue.',
     });
   } catch (error: any) {
-    console.error('Signup error:', error);
+    logger.error('Signup error:', error);
 
     // Handle Firebase-specific errors
     if (error.code === 'auth/email-already-exists') {
@@ -177,7 +178,7 @@ router.post('/signin', authRateLimiter, async (req: Request, res: Response): Pro
       throw error;
     }
   } catch (error) {
-    console.error('Signin error:', error);
+    logger.error('Signin error:', error);
     res.status(500).json({
       code: 'INTERNAL_ERROR',
       message: 'Failed to sign in',
@@ -241,7 +242,7 @@ router.post(
         },
       });
     } catch (error) {
-      console.error('Google signup error:', error);
+      logger.error('Google signup error:', error);
       res.status(500).json({
         code: 'INTERNAL_ERROR',
         message: 'Failed to create user profile',
@@ -283,7 +284,7 @@ router.post(
         message: 'Role updated successfully',
       });
     } catch (error) {
-      console.error('Set role error:', error);
+      logger.error('Set role error:', error);
       res.status(500).json({
         code: 'INTERNAL_ERROR',
         message: 'Failed to set role',
@@ -325,7 +326,7 @@ router.get('/me', authenticateFirebase, async (req: AuthRequest, res: Response):
       },
     });
   } catch (error) {
-    console.error('Get user error:', error);
+    logger.error('Get user error:', error);
     res.status(500).json({
       code: 'INTERNAL_ERROR',
       message: 'Failed to get user information',

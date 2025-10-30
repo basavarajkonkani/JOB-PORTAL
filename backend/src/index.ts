@@ -152,5 +152,5 @@ process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 // Start server
 app.listen(port, () => {
   monitoringService.logStartup(Number(port));
-  console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
+  logger.info(`Server is running at http://localhost:${port}`);
 });

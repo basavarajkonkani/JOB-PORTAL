@@ -238,20 +238,44 @@ router.get(
         resumes.map(async (resume) => {
           const versions = await ResumeVersionModel.findByResumeId(resume.id);
           return {
-            ...resume,
-            versions,
+            id: resume.id,
+            userId: resume.userId,
+            fileName: resume.fileName,
+            fileUrl: resume.fileUrl,
+            storagePath: resume.storagePath,
+            uploadedAt: resume.uploadedAt,
+            versions: versions.map(v => ({
+              id: v.id,
+              version: v.version,
+              rawText: v.rawText,
+              parsedData: v.parsedData,
+              aiSuggestions: v.aiSuggestions,
+              createdAt: v.createdAt,
+            })),
           };
         })
       );
+
+      logger.info('Resumes fetched successfully', {
+        userId,
+        count: resumesWithVersions.length,
+      });
 
       res.json({
         resumes: resumesWithVersions,
       });
     } catch (error) {
-      logger.error('Error fetching resumes', { error });
+      logger.error('Error fetching resumes', { 
+        error: error instanceof Error ? {
+          message: error.message,
+          stack: error.stack,
+        } : error,
+        userId: req.user?.userId,
+      });
       res.status(500).json({
         code: 'INTERNAL_ERROR',
         message: 'Failed to fetch resumes',
+        details: process.env.NODE_ENV === 'development' && error instanceof Error ? error.message : undefined,
       });
     }
   }
