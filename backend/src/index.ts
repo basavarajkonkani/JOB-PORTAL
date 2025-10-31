@@ -11,6 +11,7 @@ import recruiterRoutes from './routes/recruiter';
 import analyticsRoutes from './routes/analytics';
 import notificationRoutes from './routes/notifications';
 import adzunaRoutes from './routes/adzuna';
+import organizationRoutes from './routes/organizations';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { initSentry, getSentryMiddleware } from './config/sentry';
 import {
@@ -125,6 +126,9 @@ app.use('/api/notifications', notificationRoutes);
 
 // Adzuna routes
 app.use('/api/adzuna', adzunaRoutes);
+
+// Organization routes
+app.use('/api/organizations', organizationRoutes);
 
 // 404 handler - must be after all routes
 app.use(notFoundHandler);
