@@ -1,17 +1,25 @@
 import { Router, Request, Response } from 'express';
-import { authenticateToken } from '../middleware/firebaseAuth';
-import { Org } from '../models/Org';
+import { OrgModel } from '../models/Org';
+import { getFirestore } from '../config/firebase';
 import logger from '../utils/logger';
 
 const router = Router();
 
 /**
  * GET /api/organizations
- * Get all organizations with active jobs
+ * Get all organizations
  */
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const orgs = await Org.findAll();
+    const firestore = getFirestore();
+    const snapshot = await firestore.collection('organizations').get();
+    
+    const orgs = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: doc.data().createdAt?.toDate(),
+      updatedAt: doc.data().updatedAt?.toDate(),
+    }));
     
     logger.info('Organizations fetched successfully', { count: orgs.length });
     
@@ -33,7 +41,7 @@ router.get('/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     
-    const org = await Org.findById(id);
+    const org = await OrgModel.findById(id);
     
     if (!org) {
       return res.status(404).json({ error: 'Organization not found' });
