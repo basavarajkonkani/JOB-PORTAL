@@ -272,9 +272,16 @@ router.get(
         } : error,
         userId: req.user?.userId,
       });
+      
+      // Check if it's a Firestore index error
+      const errorMessage = error instanceof Error ? error.message : '';
+      const isIndexError = errorMessage.includes('index') || errorMessage.includes('requires an index');
+      
       res.status(500).json({
         code: 'INTERNAL_ERROR',
-        message: 'Failed to fetch resumes',
+        message: isIndexError 
+          ? 'Database index is building. Please wait a few minutes and try again.'
+          : 'Failed to fetch resumes',
         details: process.env.NODE_ENV === 'development' && error instanceof Error ? error.message : undefined,
       });
     }
