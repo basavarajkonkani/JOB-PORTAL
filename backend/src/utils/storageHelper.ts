@@ -85,15 +85,15 @@ export async function uploadFileToStorage(
  */
 export async function deleteFileFromStorage(storagePath: string): Promise<boolean> {
   try {
-    // Extract file ID from storage path (e.g., "resumes/userId/uuid.pdf" -> "uuid")
+    // Extract file ID from storage path (e.g., "resumes/userId/uuid.pdf" -> "uuid.pdf")
     const fileName = storagePath.split('/').pop();
     if (!fileName) {
       logger.warn('Invalid storage path', { storagePath });
       return false;
     }
     
-    // Remove file extension to get the document ID
-    const fileId = fileName.replace(/\.[^/.]+$/, '');
+    // The document ID is the full filename (including extension)
+    const fileId = fileName;
 
     const { firestore } = await import('../config/firebase');
     

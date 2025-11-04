@@ -1,0 +1,55 @@
+<svg width="1200" height="800" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:rgb(37,99,235);stop-opacity:0.1" />
+      <stop offset="100%" style="stop-color:rgb(79,70,229);stop-opacity:0.05" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="800" fill="url(#bg-gradient)"/>
+  
+  <!-- Laptop illustration -->
+  <g transform="translate(300, 200)">
+    <!-- Laptop screen -->
+    <rect x="50" y="50" width="500" height="320" rx="8" fill="#1e293b" stroke="#334155" stroke-width="4"/>
+    
+    <!-- Screen content (code editor) -->
+    <rect x="70" y="70" width="460" height="280" fill="#0f172a"/>
+    
+    <!-- Code lines -->
+    <rect x="90" y="90" width="120" height="8" rx="4" fill="#3b82f6" opacity="0.6"/>
+    <rect x="90" y="110" width="200" height="8" rx="4" fill="#8b5cf6" opacity="0.6"/>
+    <rect x="110" y="130" width="180" height="8" rx="4" fill="#10b981" opacity="0.6"/>
+    <rect x="110" y="150" width="150" height="8" rx="4" fill="#f59e0b" opacity="0.6"/>
+    <rect x="90" y="170" width="220" height="8" rx="4" fill="#3b82f6" opacity="0.6"/>
+    <rect x="110" y="190" width="160" height="8" rx="4" fill="#8b5cf6" opacity="0.6"/>
+    
+    <!-- Laptop base -->
+    <path d="M 20 370 L 580 370 L 600 420 L 0 420 Z" fill="#334155"/>
+    <ellipse cx="300" cy="395" rx="30" ry="8" fill="#1e293b"/>
+  </g>
+  
+  <!-- Professional figure (simplified) -->
+  <g transform="translate(200, 150)">
+    <!-- Head -->
+    <circle cx="150" cy="100" r="40" fill="#475569" opacity="0.3"/>
+    
+    <!-- Body -->
+    <rect x="120" y="140" width="60" height="80" rx="8" fill="#475569" opacity="0.3"/>
+    
+    <!-- Arms -->
+    <rect x="80" y="150" width="40" height="15" rx="8" fill="#475569" opacity="0.3"/>
+    <rect x="180" y="150" width="40" height="15" rx="8" fill="#475569" opacity="0.3"/>
+  </g>
+  
+  <!-- Decorative elements -->
+  <circle cx="100" cy="100" r="20" fill="#3b82f6" opacity="0.1"/>
+  <circle cx="1050" cy="150" r="30" fill="#8b5cf6" opacity="0.1"/>
+  <circle cx="950" cy="650" r="40" fill="#10b981" opacity="0.1"/>
+  
+  <!-- Text placeholder -->
+  <text x="600" y="750" font-family="Arial, sans-serif" font-size="24" fill="#64748b" opacity="0.5" text-anchor="middle">
+    Professional Hiring Platform
+  </text>
+</svg>

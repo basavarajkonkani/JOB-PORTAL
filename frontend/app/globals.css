@@ -1,0 +1,399 @@
+/* Import Inter and Poppins fonts from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap');
+
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  
+  /* Design System - Spacing (Consistent 8px base unit) */
+  --spacing-xs: 8px;
+  --spacing-sm: 16px;
+  --spacing-md: 24px;
+  --spacing-lg: 32px;
+  --spacing-xl: 40px;
+  --spacing-2xl: 80px;
+  
+  /* Design System - Radius (Consistent rounded corners) */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  
+  /* Design System - Shadows (Premium depth) */
+  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --shadow-elevated: 0 12px 32px rgba(0, 0, 0, 0.1);
+  --shadow-premium: 0 20px 40px rgba(0, 0, 0, 0.15);
+  
+  /* Design System - Colors (Premium gradients) */
+  --color-blue-gradient-start: #2563eb;
+  --color-blue-gradient-end: #6366f1;
+  --color-purple-gradient-end: #9333ea;
+  --color-orange-gradient-start: #f97316;
+  --color-orange-gradient-end: #f43f5e;
+  
+  /* Design System - Container */
+  --container-max-width: 1400px;
+  --sidebar-width: 288px;
+  --content-padding: 80px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+/* Typography Scale - Modern & Balanced */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Poppins', 'Inter', sans-serif;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #111827;
+}
+
+h1 { font-size: 3rem; } /* 48px */
+h2 { font-size: 2.25rem; } /* 36px */
+h3 { font-size: 1.875rem; } /* 30px */
+h4 { font-size: 1.5rem; } /* 24px */
+h5 { font-size: 1.25rem; } /* 20px */
+h6 { font-size: 1.125rem; } /* 18px */
+
+/* Body text with proper contrast */
+p {
+  color: #4b5563;
+  line-height: 1.6;
+}
+
+/* Responsive Typography */
+@media (max-width: 1024px) {
+  h1 { font-size: 2.25rem; } /* 36px */
+  h2 { font-size: 1.875rem; } /* 30px */
+  h3 { font-size: 1.5rem; } /* 24px */
+}
+
+@media (max-width: 768px) {
+  h1 { font-size: 1.75rem; } /* 28px */
+  h2 { font-size: 1.5rem; } /* 24px */
+  h3 { font-size: 1.25rem; } /* 20px */
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #3b82f6, #6366f1);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #2563eb, #4f46e5);
+}
+
+/* Custom scrollbar for dashboard cards */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #3b82f6, #6366f1);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #2563eb, #4f46e5);
+}
+
+/* Gradient text animation */
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+}
+
+/* Shimmer animation for progress bars */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
+
+/* Fade in up animation */
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s ease-out forwards;
+  opacity: 0;
+}
+
+/* Fade in animation for dashboard sections */
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-in-out forwards;
+}
+
+/* Hero button glow effect */
+@keyframes button-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3), 0 0 40px rgba(255, 255, 255, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.5), 0 0 60px rgba(255, 255, 255, 0.2);
+  }
+}
+
+.animate-button-glow {
+  animation: button-glow 2s ease-in-out infinite;
+}
+
+/* Floating animation for hero elements */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Grid pattern background */
+.bg-grid-white\/10 {
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Accessibility: Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.sr-only:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: inherit;
+  margin: inherit;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* Accessibility: High contrast focus indicators (3:1 contrast ratio) */
+*:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+/* Accessibility: Ensure focus is visible on interactive elements */
+[role="button"]:focus-visible,
+[role="link"]:focus-visible,
+[role="tab"]:focus-visible,
+[role="menuitem"]:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+/* Accessibility: High contrast mode support */
+@media (prefers-contrast: high) {
+  *:focus-visible {
+    outline: 4px solid #1e40af;
+    outline-offset: 2px;
+  }
+  
+  button,
+  a,
+  input,
+  textarea,
+  select {
+    border-width: 2px;
+  }
+}
+
+/* Sign-in page animations */
+@keyframes slide-in-left {
+  0% {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left 0.6s ease-out forwards;
+  opacity: 0;
+}
+
+@keyframes slide-in-down {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-in-down {
+  animation: slide-in-down 0.4s ease-out forwards;
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-2px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(2px);
+  }
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+/* Animation delays for staggered entrance */
+.animation-delay-100 {
+  animation-delay: 0.1s;
+}
+
+.animation-delay-200 {
+  animation-delay: 0.2s;
+}
+
+.animation-delay-300 {
+  animation-delay: 0.3s;
+}
+
+.animation-delay-400 {
+  animation-delay: 0.4s;
+}
+
+.animation-delay-500 {
+  animation-delay: 0.5s;
+}
+
+.animation-delay-600 {
+  animation-delay: 0.6s;
+}
+
+/* Enhanced shadow for hover states */
+.hover\:shadow-3xl:hover {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* Accessibility: Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  /* Ensure elements are visible even with reduced motion */
+  .animate-slide-in-left,
+  .animate-slide-in-down,
+  .animate-fade-in,
+  .animate-fade-in-up {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

@@ -26,7 +26,7 @@ function generateJobSearchCacheKey(filters: any, page: number, limit: number): s
  */
 router.get('/', async (req: Request, res: Response): Promise<void> => {
   try {
-    const { title, level, location, remote, page = '1', limit = '20' } = req.query;
+    const { title, level, location, remote, orgId, page = '1', limit = '20' } = req.query;
 
     // Parse pagination parameters
     const pageNum = parseInt(page as string, 10);
@@ -68,6 +68,10 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
 
     if (remote !== undefined) {
       filters.remote = remote === 'true';
+    }
+
+    if (orgId) {
+      filters.orgId = orgId as string;
     }
 
     // Generate cache key

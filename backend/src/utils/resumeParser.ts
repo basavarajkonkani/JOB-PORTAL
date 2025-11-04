@@ -43,14 +43,14 @@ async function extractTextFromDOCX(buffer: Buffer): Promise<string> {
  */
 async function downloadFileFromStorage(storagePath: string): Promise<Buffer> {
   try {
-    // Extract file ID from storage path (e.g., "resumes/userId/uuid.pdf" -> "uuid")
+    // Extract file ID from storage path (e.g., "resumes/userId/uuid.pdf" -> "uuid.pdf")
     const fileName = storagePath.split('/').pop();
     if (!fileName) {
       throw new Error(`Invalid storage path: ${storagePath}`);
     }
     
-    // Remove file extension to get the document ID
-    const fileId = fileName.replace(/\.[^/.]+$/, '');
+    // The document ID is the full filename (including extension)
+    const fileId = fileName;
 
     // Import firestore dynamically to avoid circular dependencies
     const { firestore } = await import('../config/firebase');
