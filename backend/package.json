@@ -12,17 +12,7 @@
     "format": "prettier --write \"src/**/*.ts\"",
     "test": "jest --runInBand",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "test:security": "./scripts/test-security-rules.sh test",
-    "security:validate": "./scripts/test-security-rules.sh validate",
-    "migrate:export": "ts-node src/scripts/export-postgres-data.ts",
-    "migrate:import": "ts-node src/scripts/import-to-firebase.ts",
-    "migrate:verify": "ts-node src/scripts/verify-migration.ts",
-    "migrate:rollback": "ts-node src/scripts/rollback-migration.ts",
-    "migrate:test": "jest --runInBand migration-scripts.test.ts",
-    "test:load": "jest --runInBand load-testing.test.ts --verbose",
-    "test:load:report": "./scripts/run-load-tests.sh",
-    "test:resume-endpoints": "ts-node src/scripts/test-resume-endpoints.ts"
+    "test:coverage": "jest --coverage"
   },
   "keywords": [],
   "author": "",

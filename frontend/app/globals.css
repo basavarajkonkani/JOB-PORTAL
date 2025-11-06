@@ -1,39 +1,50 @@
 /* Import Inter and Poppins fonts from Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 @import "tailwindcss";
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #0f172a;
   
-  /* Design System - Spacing (Consistent 8px base unit) */
+  /* Premium Design System - Spacing */
   --spacing-xs: 8px;
   --spacing-sm: 16px;
   --spacing-md: 24px;
   --spacing-lg: 32px;
-  --spacing-xl: 40px;
-  --spacing-2xl: 80px;
+  --spacing-xl: 48px;
+  --spacing-2xl: 96px;
   
-  /* Design System - Radius (Consistent rounded corners) */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
+  /* Premium Design System - Radius */
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+  --radius-2xl: 40px;
   
-  /* Design System - Shadows (Premium depth) */
-  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.04);
-  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
-  --shadow-elevated: 0 12px 32px rgba(0, 0, 0, 0.1);
-  --shadow-premium: 0 20px 40px rgba(0, 0, 0, 0.15);
+  /* Premium Design System - Shadows (Enhanced depth) */
+  --shadow-soft: 0 2px 12px rgba(99, 102, 241, 0.08);
+  --shadow-card: 0 8px 32px rgba(99, 102, 241, 0.12);
+  --shadow-card-hover: 0 16px 48px rgba(99, 102, 241, 0.18);
+  --shadow-elevated: 0 20px 60px rgba(99, 102, 241, 0.15);
+  --shadow-premium: 0 32px 80px rgba(99, 102, 241, 0.2);
+  --shadow-glow: 0 0 40px rgba(99, 102, 241, 0.3);
   
-  /* Design System - Colors (Premium gradients) */
-  --color-blue-gradient-start: #2563eb;
-  --color-blue-gradient-end: #6366f1;
-  --color-purple-gradient-end: #9333ea;
-  --color-orange-gradient-start: #f97316;
-  --color-orange-gradient-end: #f43f5e;
+  /* Premium Design System - Colors (Blue-Violet Gradients) */
+  --color-primary-start: #3b82f6;
+  --color-primary-mid: #6366f1;
+  --color-primary-end: #8b5cf6;
+  --color-accent-start: #06b6d4;
+  --color-accent-end: #3b82f6;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  
+  /* Glassmorphism */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.18);
+  --glass-dark-bg: rgba(15, 23, 42, 0.6);
+  --glass-dark-border: rgba(139, 92, 246, 0.2);
   
   /* Design System - Container */
   --container-max-width: 1400px;
@@ -54,30 +65,33 @@ body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
   line-height: 1.6;
   font-weight: 400;
+  overflow-x: hidden;
 }
 
-/* Typography Scale - Modern & Balanced */
+/* Premium Typography Scale */
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Poppins', 'Inter', sans-serif;
-  line-height: 1.2;
+  font-family: 'Space Grotesk', 'Poppins', 'Inter', sans-serif;
+  line-height: 1.15;
   font-weight: 700;
-  letter-spacing: -0.02em;
-  color: #111827;
+  letter-spacing: -0.03em;
+  color: #0f172a;
 }
 
-h1 { font-size: 3rem; } /* 48px */
-h2 { font-size: 2.25rem; } /* 36px */
-h3 { font-size: 1.875rem; } /* 30px */
-h4 { font-size: 1.5rem; } /* 24px */
-h5 { font-size: 1.25rem; } /* 20px */
-h6 { font-size: 1.125rem; } /* 18px */
+h1 { font-size: 3.5rem; font-weight: 800; } /* 56px */
+h2 { font-size: 2.75rem; font-weight: 700; } /* 44px */
+h3 { font-size: 2rem; font-weight: 700; } /* 32px */
+h4 { font-size: 1.5rem; font-weight: 600; } /* 24px */
+h5 { font-size: 1.25rem; font-weight: 600; } /* 20px */
+h6 { font-size: 1.125rem; font-weight: 600; } /* 18px */
 
-/* Body text with proper contrast */
+/* Body text with enhanced contrast */
 p {
-  color: #4b5563;
-  line-height: 1.6;
+  color: #475569;
+  line-height: 1.7;
+  font-weight: 400;
 }
 
 /* Responsive Typography */
@@ -135,6 +149,35 @@ html {
   background: linear-gradient(180deg, #2563eb, #4f46e5);
 }
 
+/* Premium Glassmorphism Effect */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.glass-dark {
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Neumorphic Card Effect */
+.neumorphic {
+  background: linear-gradient(145deg, #ffffff, #f8fafc);
+  box-shadow: 8px 8px 24px rgba(148, 163, 184, 0.15),
+              -8px -8px 24px rgba(255, 255, 255, 0.9);
+}
+
+.neumorphic-inset {
+  background: linear-gradient(145deg, #f8fafc, #ffffff);
+  box-shadow: inset 4px 4px 12px rgba(148, 163, 184, 0.1),
+              inset -4px -4px 12px rgba(255, 255, 255, 0.9);
+}
+
 /* Gradient text animation */
 @keyframes gradient-shift {
   0% {
@@ -150,7 +193,23 @@ html {
 
 .animate-gradient {
   background-size: 200% 200%;
-  animation: gradient-shift 3s ease infinite;
+  animation: gradient-shift 4s ease infinite;
+}
+
+/* Glow pulse animation */
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.3),
+                0 0 40px rgba(99, 102, 241, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(99, 102, 241, 0.5),
+                0 0 80px rgba(99, 102, 241, 0.2);
+  }
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 3s ease-in-out infinite;
 }
 
 /* Shimmer animation for progress bars */
@@ -218,12 +277,73 @@ html {
     transform: translateY(0px);
   }
   50% {
-    transform: translateY(-10px);
+    transform: translateY(-20px);
   }
 }
 
 .animate-float {
-  animation: float 3s ease-in-out infinite;
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Scale in animation */
+@keyframes scale-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-scale-in {
+  animation: scale-in 0.5s ease-out forwards;
+}
+
+/* Slide in from right */
+@keyframes slide-in-right {
+  0% {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.6s ease-out forwards;
+  opacity: 0;
+}
+
+/* Bounce subtle */
+@keyframes bounce-subtle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 2s ease-in-out infinite;
+}
+
+/* Rotate slow */
+@keyframes rotate-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-rotate-slow {
+  animation: rotate-slow 20s linear infinite;
 }
 
 /* Grid pattern background */
@@ -378,6 +498,39 @@ select:focus-visible {
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 }
 
+/* Particle animation for futuristic effect */
+@keyframes particle-float {
+  0%, 100% {
+    transform: translate(0, 0);
+    opacity: 0.3;
+  }
+  25% {
+    transform: translate(10px, -10px);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translate(-5px, -20px);
+    opacity: 0.9;
+  }
+  75% {
+    transform: translate(-10px, -10px);
+    opacity: 0.6;
+  }
+}
+
+.animate-particle-float {
+  animation: particle-float 8s ease-in-out infinite;
+}
+
+/* Glow effect for buttons and cards */
+.shadow-glow-cyan {
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.4), 0 0 40px rgba(6, 182, 212, 0.2);
+}
+
+.shadow-glow-purple {
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.4), 0 0 40px rgba(168, 85, 247, 0.2);
+}
+
 /* Accessibility: Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -396,4 +549,10 @@ select:focus-visible {
     opacity: 1 !important;
     transform: none !important;
   }
+}
+
+/* Hide Next.js development indicator */
+#__next-build-watcher,
+nextjs-portal {
+  display: none !important;
 }
