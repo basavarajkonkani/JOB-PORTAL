@@ -3,9 +3,23 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
-import JobCard from '@/components/jobs/JobCard';
 import { useRealtimeJobs } from '@/lib/useRealtimeJobs';
 import { useRealtimeCandidateProfile } from '@/lib/useRealtimeProfile';
+import {
+  Briefcase,
+  FileText,
+  Award,
+  Search,
+  User,
+  LogOut,
+  ChevronRight,
+  MapPin,
+  DollarSign,
+  Clock,
+  TrendingUp,
+  Bell,
+  Settings,
+} from 'lucide-react';
 
 interface Experience {
   title: string;
@@ -38,9 +52,7 @@ interface CandidateProfile {
 export default function CandidateDashboard() {
   const { user, signOut } = useAuth();
   const router = useRouter();
-  const [activeNav, setActiveNav] = useState('dashboard');
 
-  // Use real-time Firestore hooks for profile and jobs
   const { profile, loading: profileLoading } = useRealtimeCandidateProfile(user?.id || null);
   const { jobs: recommendedJobs, loading: jobsLoading } = useRealtimeJobs({
     limitCount: 6,
@@ -51,7 +63,6 @@ export default function CandidateDashboard() {
   const [profileCompletion, setProfileCompletion] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Calculate profile completion when profile changes
   useEffect(() => {
     if (profile) {
       setProfileCompletion(calculateProfileCompletion(profile));
@@ -64,18 +75,14 @@ export default function CandidateDashboard() {
 
   const calculateProfileCompletion = (profileData: CandidateProfile | null): number => {
     if (!profileData) return 0;
-
     let completed = 0;
     const total = 6;
-
     if (profileData.location) completed++;
     if (profileData.skills && profileData.skills.length > 0) completed++;
     if (profileData.experience && profileData.experience.length > 0) completed++;
     if (profileData.education && profileData.education.length > 0) completed++;
     if (profileData.preferences?.roles && profileData.preferences.roles.length > 0) completed++;
-    if (profileData.preferences?.locations && profileData.preferences.locations.length > 0)
-      completed++;
-
+    if (profileData.preferences?.locations && profileData.preferences.locations.length > 0) completed++;
     return Math.round((completed / total) * 100);
   };
 
@@ -84,385 +91,344 @@ export default function CandidateDashboard() {
     router.push('/signin');
   };
 
-  const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6', path: '/dashboard' },
-    { id: 'jobs', label: 'Jobs', icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z', path: '/jobs' },
-    { id: 'applications', label: 'Applications', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', path: '/applications' },
-    { id: 'profile', label: 'Profile', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z', path: '/profile' },
-    { id: 'resume', label: 'Resume', icon: 'M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z', path: '/resume' },
-  ];
-
-  const getTodayDate = () => {
-    const options: Intl.DateTimeFormatOptions = { 
-      month: 'long', 
-      day: 'numeric',
-      year: 'numeric'
-    };
-    return new Date().toLocaleDateString('en-US', options);
-  };
-
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#0f0f1a] flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="animate-spin rounded-full h-12 w-12 border-2 border-[#9b5de5]/20 border-t-[#9b5de5]"></div>
-          <p className="text-white/70 font-medium text-sm">Loading your dashboard...</p>
+          <div className="w-12 h-12 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin"></div>
+          <p className="text-gray-600 font-medium text-sm">Loading your dashboard...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0f0f1a] flex">
-      {/* Compact Sidebar */}
-      <aside className="fixed left-0 top-0 h-screen w-60 bg-[#16161f] border-r border-white/5 z-50 flex flex-col">
-        {/* Logo Section */}
-        <div className="p-5 border-b border-white/5">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 bg-[#9b5de5] rounded-lg flex items-center justify-center">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            </div>
-            <div>
-              <h1 className="text-base font-semibold text-white">AI Job Portal</h1>
-              <p className="text-xs text-white/40">Career Platform</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 p-3 space-y-1">
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => {
-                setActiveNav(item.id);
-                if (item.path !== '/dashboard') router.push(item.path);
-              }}
-              className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg font-medium transition-all text-sm ${
-                activeNav === item.id
-                  ? 'bg-[#9b5de5]/10 text-white border border-[#9b5de5]/20'
-                  : 'text-white/60 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
-              </svg>
-              <span>{item.label}</span>
-            </button>
-          ))}
-        </nav>
-
-        {/* User Section */}
-        <div className="p-3 border-t border-white/5">
-          <div className="flex items-center gap-2.5 mb-2.5 p-2.5 bg-white/5 rounded-lg">
-            <div className="w-9 h-9 bg-[#9b5de5] rounded-full flex items-center justify-center text-white font-semibold text-sm">
-              {user?.name?.charAt(0).toUpperCase()}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-medium text-white text-sm truncate">{user?.name}</p>
-              <p className="text-xs text-white/40 truncate">{user?.email}</p>
-            </div>
-          </div>
-          <button
-            onClick={handleSignOut}
-            className="w-full px-3 py-2 text-sm font-medium text-white/70 hover:text-white bg-white/5 hover:bg-red-500/10 rounded-lg transition-all flex items-center justify-center gap-2 border border-white/5 hover:border-red-500/20"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-            Sign Out
-          </button>
-        </div>
-      </aside>
-
-      {/* Main Content Area */}
-      <main className="flex-1 ml-60">
-        {/* Top Bar */}
-        <header className="bg-[#16161f] border-b border-white/5 px-6 py-4 sticky top-0 z-40">
+    <div className="min-h-screen bg-gray-50">
+      {/* Top Navigation Bar */}
+      <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-semibold text-white mb-0.5">
-                Welcome Back, {user?.name?.split(' ')[0]}
-              </h1>
-              <p className="text-white/50 text-sm">Here's what's happening with your job search</p>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center">
+                <Briefcase className="w-5 h-5 text-white" strokeWidth={2} />
+              </div>
+              <div>
+                <h1 className="text-lg font-bold text-gray-900">AI Job Portal</h1>
+                <p className="text-xs text-gray-500">Your Career Platform</p>
+              </div>
             </div>
-            <div className="px-4 py-2 bg-white/5 rounded-lg border border-white/5">
-              <p className="text-xs text-white/40">Today</p>
-              <p className="text-sm text-white font-medium">{getTodayDate()}</p>
+
+            <div className="flex items-center gap-3">
+              <button className="w-10 h-10 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors">
+                <Bell className="w-5 h-5 text-gray-600" />
+              </button>
+              <button className="w-10 h-10 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors">
+                <Settings className="w-5 h-5 text-gray-600" />
+              </button>
+              <button
+                onClick={handleSignOut}
+                className="px-4 h-10 rounded-lg border border-gray-200 flex items-center gap-2 hover:bg-gray-50 transition-colors"
+              >
+                <LogOut className="w-4 h-4 text-gray-600" />
+                <span className="text-sm font-medium text-gray-700">Sign Out</span>
+              </button>
             </div>
           </div>
-        </header>
+        </div>
+      </nav>
 
-        {/* Dashboard Content */}
-        <div className="px-6 py-5 space-y-5">
-          {/* Stats Grid */}
-          <section className="grid grid-cols-3 gap-4">
-            {/* Jobs Recommended Card */}
-            <div className="bg-[#16161f] rounded-xl p-5 border border-white/5 hover:border-[#9b5de5]/20 transition-all">
-              <div className="flex items-start justify-between mb-3">
-                <div className="p-2 bg-[#9b5de5]/10 rounded-lg">
-                  <svg className="w-5 h-5 text-[#9b5de5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                </div>
-                <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 text-xs font-medium rounded">
-                  +12%
-                </span>
-              </div>
-              <div>
-                <p className="text-3xl font-bold text-white mb-0.5">{recommendedJobs.length}</p>
-                <p className="text-white/50 text-sm">Jobs Recommended</p>
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Welcome Section */}
+        <div className="mb-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">
+            Welcome Back, {user?.name?.split(' ')[0]}
+          </h2>
+          <p className="text-gray-600">Here's what's happening with your job search today</p>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {/* Jobs Recommended */}
+          <div className="bg-white rounded-2xl p-6 border border-gray-200 hover:shadow-lg transition-shadow">
+            <div className="flex items-start justify-between mb-4">
+              <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center">
+                <Briefcase className="w-6 h-6 text-blue-600" strokeWidth={2} />
               </div>
             </div>
+            <p className="text-4xl font-bold text-gray-900 mb-1">{recommendedJobs.length}</p>
+            <p className="text-gray-600 font-medium">Jobs Recommended</p>
+            <p className="text-sm text-gray-500 mt-1">AI-matched for you</p>
+          </div>
 
-            {/* Applications Card */}
-            <div className="bg-[#16161f] rounded-xl p-5 border border-white/5 hover:border-[#9b5de5]/20 transition-all">
-              <div className="flex items-start justify-between mb-3">
-                <div className="p-2 bg-blue-500/10 rounded-lg">
-                  <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </div>
-                <span className="px-2 py-0.5 bg-blue-500/10 text-blue-400 text-xs font-medium rounded">
-                  Active
-                </span>
-              </div>
-              <div>
-                <p className="text-3xl font-bold text-white mb-0.5">0</p>
-                <p className="text-white/50 text-sm">Applications</p>
+          {/* Applications */}
+          <div className="bg-white rounded-2xl p-6 border border-gray-200 hover:shadow-lg transition-shadow">
+            <div className="flex items-start justify-between mb-4">
+              <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center">
+                <FileText className="w-6 h-6 text-blue-600" strokeWidth={2} />
               </div>
             </div>
+            <p className="text-4xl font-bold text-gray-900 mb-1">0</p>
+            <p className="text-gray-600 font-medium">Applications</p>
+            <p className="text-sm text-gray-500 mt-1">Submitted this month</p>
+          </div>
 
-            {/* Profile Strength Card */}
-            <div className="bg-[#16161f] rounded-xl p-5 border border-white/5 hover:border-[#9b5de5]/20 transition-all">
-              <div className="flex items-start justify-between mb-3">
-                <div className="p-2 bg-[#9b5de5]/10 rounded-lg">
-                  <svg className="w-5 h-5 text-[#9b5de5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <span className="px-2 py-0.5 bg-[#9b5de5]/10 text-[#9b5de5] text-xs font-medium rounded">
-                  {profileCompletion >= 80 ? 'Strong' : 'Good'}
-                </span>
+          {/* Profile Strength */}
+          <div className="bg-white rounded-2xl p-6 border border-gray-200 hover:shadow-lg transition-shadow">
+            <div className="flex items-start justify-between mb-4">
+              <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center">
+                <Award className="w-6 h-6 text-blue-600" strokeWidth={2} />
               </div>
-              <div>
-                <p className="text-3xl font-bold text-white mb-0.5">{profileCompletion}%</p>
-                <p className="text-white/50 text-sm mb-2">Profile Strength</p>
-                <div className="w-full bg-white/10 rounded-full h-1 overflow-hidden">
-                  <div 
-                    className="h-full bg-[#9b5de5] rounded-full transition-all duration-1000"
+            </div>
+            <p className="text-4xl font-bold text-gray-900 mb-1">{profileCompletion}%</p>
+            <p className="text-gray-600 font-medium">Profile Strength</p>
+            <div className="mt-3 w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-blue-600 rounded-full transition-all duration-1000"
+                style={{ width: `${profileCompletion}%` }}
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        {/* Profile Completion Banner */}
+        {profileCompletion < 100 && (
+          <div className="bg-blue-50 rounded-2xl p-6 border border-blue-100 mb-8">
+            <div className="flex items-center justify-between gap-6">
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-gray-900 mb-1">Complete Your Profile</h3>
+                <p className="text-gray-600 mb-3">Unlock AI-powered job recommendations and increase your visibility</p>
+                <div className="w-full h-2 bg-white rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-blue-600 rounded-full transition-all duration-1000"
                     style={{ width: `${profileCompletion}%` }}
-                  />
+                  ></div>
                 </div>
+                <p className="text-sm text-gray-500 mt-2">{profileCompletion}% Complete</p>
               </div>
+              <button
+                onClick={() => router.push('/profile')}
+                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-colors flex items-center gap-2 shadow-sm"
+              >
+                <span>Complete Now</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
             </div>
-          </section>
+          </div>
+        )}
 
-          {/* Profile Completion Banner */}
-          {profileCompletion < 100 && (
-            <section className="bg-[#16161f] rounded-xl p-5 border border-[#9b5de5]/20">
-              <div className="flex items-center justify-between gap-5">
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="p-2 bg-[#9b5de5]/10 rounded-lg">
-                    <svg className="w-5 h-5 text-[#9b5de5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-base font-semibold text-white mb-0.5">Complete Your Profile</h3>
-                    <p className="text-white/50 text-sm mb-2">Unlock AI-powered job recommendations</p>
-                    <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
-                      <div
-                        className="bg-[#9b5de5] h-1.5 rounded-full transition-all duration-1000"
-                        style={{ width: `${profileCompletion}%` }}
-                      />
-                    </div>
-                    <p className="text-white/40 mt-1.5 text-xs">{profileCompletion}% Complete</p>
-                  </div>
+        {/* Quick Actions */}
+        <div className="mb-8">
+          <h3 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <button
+              onClick={() => router.push('/jobs')}
+              className="bg-white rounded-2xl p-6 border border-gray-200 hover:shadow-lg hover:border-blue-200 transition-all text-left group"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center group-hover:bg-blue-100 transition-colors">
+                  <Search className="w-6 h-6 text-blue-600" strokeWidth={2} />
+                </div>
+                <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
+              </div>
+              <h4 className="text-lg font-bold text-gray-900 mb-1">Search Jobs</h4>
+              <p className="text-sm text-gray-600">Find your perfect role</p>
+            </button>
+
+            <button
+              onClick={() => router.push('/resume')}
+              className="bg-white rounded-2xl p-6 border border-gray-200 hover:shadow-lg hover:border-blue-200 transition-all text-left group"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center group-hover:bg-blue-100 transition-colors">
+                  <FileText className="w-6 h-6 text-blue-600" strokeWidth={2} />
+                </div>
+                <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
+              </div>
+              <h4 className="text-lg font-bold text-gray-900 mb-1">Update Resume</h4>
+              <p className="text-sm text-gray-600">AI-powered builder</p>
+            </button>
+
+            <button
+              onClick={() => router.push('/profile')}
+              className="bg-white rounded-2xl p-6 border border-gray-200 hover:shadow-lg hover:border-blue-200 transition-all text-left group"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center group-hover:bg-blue-100 transition-colors">
+                  <User className="w-6 h-6 text-blue-600" strokeWidth={2} />
+                </div>
+                <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
+              </div>
+              <h4 className="text-lg font-bold text-gray-900 mb-1">Edit Profile</h4>
+              <p className="text-sm text-gray-600">Complete your profile</p>
+            </button>
+          </div>
+        </div>
+
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Recommended Jobs - 2 columns */}
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-2xl p-6 border border-gray-200">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-1">Recommended Jobs</h3>
+                  <p className="text-gray-600">AI-matched opportunities for you</p>
                 </div>
                 <button
-                  onClick={() => router.push('/profile')}
-                  className="px-5 py-2.5 bg-[#9b5de5] hover:bg-[#8b4dd5] text-white rounded-lg font-medium transition-all flex items-center gap-2 text-sm"
+                  onClick={() => router.push('/jobs')}
+                  className="px-4 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-700 font-medium transition-colors flex items-center gap-2"
                 >
-                  <span>Complete Now</span>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
+                  <span>View All</span>
+                  <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
-            </section>
-          )}
 
-          {/* Two Column Layout */}
-          <div className="grid grid-cols-2 gap-4">
-            {/* Recommended Jobs Section */}
-            <section className="space-y-4">
-              <div className="bg-[#16161f] rounded-xl p-5 border border-white/5">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h2 className="text-lg font-semibold text-white mb-0.5">Recommended Jobs</h2>
-                    <p className="text-white/50 text-sm">AI-matched opportunities for you</p>
+              {recommendedJobs.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
+                    <Briefcase className="w-8 h-8 text-gray-400" />
                   </div>
+                  <h4 className="text-lg font-bold text-gray-900 mb-2">No Jobs Yet</h4>
+                  <p className="text-gray-600 mb-6">We're finding perfect opportunities for you</p>
                   <button
                     onClick={() => router.push('/jobs')}
-                    className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-white text-sm font-medium rounded-lg transition-all border border-white/5 flex items-center gap-1.5"
+                    className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-colors"
                   >
-                    <span>View All</span>
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
+                    Explore All Jobs
                   </button>
                 </div>
-
-                {recommendedJobs.length === 0 ? (
-                  <div className="bg-white/5 rounded-lg p-10 text-center border border-white/5">
-                    <div className="w-14 h-14 bg-[#9b5de5]/10 rounded-lg flex items-center justify-center mx-auto mb-3">
-                      <svg className="h-7 w-7 text-[#9b5de5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                    <h3 className="text-base font-semibold text-white mb-1">No Jobs Yet</h3>
-                    <p className="text-white/50 text-sm mb-3">We're finding perfect opportunities for you</p>
-                    <button
-                      onClick={() => router.push('/jobs')}
-                      className="px-5 py-2 bg-[#9b5de5] hover:bg-[#8b4dd5] text-white text-sm font-medium rounded-lg transition-all"
+              ) : (
+                <div className="space-y-4 max-h-[600px] overflow-y-auto">
+                  {recommendedJobs.map((job) => (
+                    <div
+                      key={job.id}
+                      className="p-5 rounded-xl border border-gray-200 hover:border-blue-200 hover:shadow-md transition-all cursor-pointer group"
+                      onClick={() => router.push(`/jobs/${job.id}`)}
                     >
-                      Explore All Jobs
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-2.5 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-                    {recommendedJobs.map((job) => (
-                      <div key={job.id}>
-                        <JobCard job={job} />
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </section>
-
-            {/* Quick Actions & AI Insights */}
-            <aside className="space-y-4">
-              {/* Quick Actions */}
-              <div className="bg-[#16161f] rounded-xl p-5 border border-white/5">
-                <h3 className="text-base font-semibold text-white mb-3">Quick Actions</h3>
-                <div className="space-y-2">
-                  <button
-                    onClick={() => router.push('/jobs')}
-                    className="group w-full flex items-center gap-2.5 p-2.5 bg-white/5 hover:bg-white/10 rounded-lg transition-all border border-white/5"
-                  >
-                    <div className="p-1.5 bg-[#9b5de5]/10 rounded-lg">
-                      <svg className="w-4 h-4 text-[#9b5de5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                      </svg>
-                    </div>
-                    <span className="text-white font-medium flex-1 text-left text-sm">Search Jobs</span>
-                    <svg className="w-3.5 h-3.5 text-white/40 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                  
-                  <button
-                    onClick={() => router.push('/resume')}
-                    className="group w-full flex items-center gap-2.5 p-2.5 bg-white/5 hover:bg-white/10 rounded-lg transition-all border border-white/5"
-                  >
-                    <div className="p-1.5 bg-blue-500/10 rounded-lg">
-                      <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                    </div>
-                    <span className="text-white font-medium flex-1 text-left text-sm">Update Resume</span>
-                    <svg className="w-3.5 h-3.5 text-white/40 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                  
-                  <button
-                    onClick={() => router.push('/profile')}
-                    className="group w-full flex items-center gap-2.5 p-2.5 bg-white/5 hover:bg-white/10 rounded-lg transition-all border border-white/5"
-                  >
-                    <div className="p-1.5 bg-[#9b5de5]/10 rounded-lg">
-                      <svg className="w-4 h-4 text-[#9b5de5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                    </div>
-                    <span className="text-white font-medium flex-1 text-left text-sm">Edit Profile</span>
-                    <svg className="w-3.5 h-3.5 text-white/40 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-
-              {/* AI Insights */}
-              <div className="bg-[#16161f] rounded-xl p-5 border border-white/5">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="p-1.5 bg-[#9b5de5]/10 rounded-lg">
-                    <svg className="w-4 h-4 text-[#9b5de5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                    </svg>
-                  </div>
-                  <h3 className="text-base font-semibold text-white">AI Insights</h3>
-                </div>
-                
-                <div className="space-y-3">
-                  {/* Insight 1 */}
-                  <div className="p-3 bg-white/5 rounded-lg border border-white/5">
-                    <div className="flex items-start gap-2.5">
-                      <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full mt-1.5"></div>
-                      <div className="flex-1">
-                        <p className="text-white text-sm font-medium mb-0.5">Profile Views</p>
-                        <p className="text-white/50 text-xs">Your profile was viewed 24 times this week</p>
-                        <div className="mt-1.5 flex items-center gap-2">
-                          <div className="flex-1 bg-white/10 rounded-full h-1">
-                            <div className="bg-emerald-400 h-1 rounded-full" style={{ width: '75%' }} />
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <h4 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+                            {job.title}
+                          </h4>
+                          <div className="flex items-center gap-4 text-sm text-gray-600">
+                            <span className="flex items-center gap-1.5">
+                              <MapPin className="w-4 h-4" />
+                              {job.location}
+                            </span>
+                            {job.remote && (
+                              <span className="px-2 py-1 rounded-lg bg-green-50 text-green-700 text-xs font-semibold border border-green-200">
+                                Remote
+                              </span>
+                            )}
                           </div>
-                          <span className="text-emerald-400 text-xs font-medium">+15%</span>
                         </div>
+                        <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
                       </div>
-                    </div>
-                  </div>
-
-                  {/* Insight 2 */}
-                  <div className="p-3 bg-white/5 rounded-lg border border-white/5">
-                    <div className="flex items-start gap-2.5">
-                      <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mt-1.5"></div>
-                      <div className="flex-1">
-                        <p className="text-white text-sm font-medium mb-0.5">Skill Match</p>
-                        <p className="text-white/50 text-xs">85% match with trending job requirements</p>
-                        <div className="mt-1.5 flex items-center gap-2">
-                          <div className="flex-1 bg-white/10 rounded-full h-1">
-                            <div className="bg-blue-400 h-1 rounded-full" style={{ width: '85%' }} />
-                          </div>
-                          <span className="text-blue-400 text-xs font-medium">85%</span>
+                      {job.compensation && (job.compensation.min || job.compensation.max) && (
+                        <div className="flex items-center gap-2 text-blue-600 font-semibold">
+                          <DollarSign className="w-4 h-4" />
+                          <span>
+                            {job.compensation.min && job.compensation.max
+                              ? `${job.compensation.currency} ${job.compensation.min.toLocaleString()} - ${job.compensation.max.toLocaleString()}`
+                              : job.compensation.min
+                              ? `From ${job.compensation.currency} ${job.compensation.min.toLocaleString()}`
+                              : `Up to ${job.compensation.currency} ${job.compensation.max?.toLocaleString()}`}
+                          </span>
                         </div>
-                      </div>
+                      )}
                     </div>
-                  </div>
-
-                  {/* Insight 3 */}
-                  <div className="p-3 bg-white/5 rounded-lg border border-white/5">
-                    <div className="flex items-start gap-2.5">
-                      <div className="w-1.5 h-1.5 bg-[#9b5de5] rounded-full mt-1.5"></div>
-                      <div className="flex-1">
-                        <p className="text-white text-sm font-medium mb-0.5">Response Rate</p>
-                        <p className="text-white/50 text-xs">Companies respond within 3 days on average</p>
-                        <div className="mt-1.5">
-                          <span className="text-[#9b5de5] text-xs font-medium">3 days avg</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  ))}
                 </div>
-              </div>
-            </aside>
+              )}
+            </div>
           </div>
 
+          {/* Sidebar - 1 column */}
+          <div className="space-y-6">
+            {/* Profile Insights */}
+            <div className="bg-white rounded-2xl p-6 border border-gray-200">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Profile Insights</h3>
+              <div className="space-y-4">
+                <div className="p-4 rounded-xl bg-gray-50 border border-gray-100">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm font-semibold text-gray-900">Profile Views</p>
+                    <TrendingUp className="w-4 h-4 text-green-600" />
+                  </div>
+                  <p className="text-2xl font-bold text-gray-900 mb-1">24</p>
+                  <p className="text-xs text-gray-600">This week</p>
+                  <div className="mt-3 flex items-center gap-2">
+                    <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                      <div className="h-full bg-green-500 rounded-full" style={{ width: '75%' }}></div>
+                    </div>
+                    <span className="text-xs font-semibold text-green-600">+15%</span>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-xl bg-gray-50 border border-gray-100">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm font-semibold text-gray-900">Skill Match</p>
+                    <Award className="w-4 h-4 text-blue-600" />
+                  </div>
+                  <p className="text-2xl font-bold text-gray-900 mb-1">85%</p>
+                  <p className="text-xs text-gray-600">Match with trending jobs</p>
+                  <div className="mt-3 flex items-center gap-2">
+                    <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                      <div className="h-full bg-blue-600 rounded-full" style={{ width: '85%' }}></div>
+                    </div>
+                    <span className="text-xs font-semibold text-blue-600">85%</span>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-xl bg-gray-50 border border-gray-100">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm font-semibold text-gray-900">Response Rate</p>
+                    <Clock className="w-4 h-4 text-gray-600" />
+                  </div>
+                  <p className="text-2xl font-bold text-gray-900 mb-1">3 days</p>
+                  <p className="text-xs text-gray-600">Average response time</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Recent Activity */}
+            <div className="bg-white rounded-2xl p-6 border border-gray-200">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Recent Activity</h3>
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                    <Briefcase className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-900">New job match</p>
+                    <p className="text-xs text-gray-600">2 hours ago</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                    <User className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-900">Profile viewed</p>
+                    <p className="text-xs text-gray-600">5 hours ago</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                    <Award className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-900">Skill verified</p>
+                    <p className="text-xs text-gray-600">1 day ago</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

@@ -2,9 +2,9 @@ import Link from 'next/link';
 
 export default function Footer() {
   return (
-    <footer className="relative w-full bg-gradient-to-r from-[#002B7F] to-[#0066FF] text-white shadow-2xl">
+    <footer className="relative w-full bg-[#0F172A] text-white">
       {/* Decorative top border */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#2563EB] via-[#3B82F6] to-[#2563EB]"></div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
         {/* Main Footer Content */}
@@ -13,27 +13,27 @@ export default function Footer() {
           {/* Section 1: Brand */}
           <div className="space-y-5">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg transform transition-transform hover:scale-110">
-                <svg className="w-7 h-7 text-[#002B7F]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+              <div className="w-12 h-12 bg-[#2563EB] rounded-xl flex items-center justify-center shadow-lg">
+                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
               </div>
-              <span className="text-2xl font-bold tracking-tight">AI Job Portal</span>
+              <span className="text-2xl font-bold tracking-tight text-white">AI Job Portal</span>
             </div>
-            <p className="text-white/90 text-sm leading-relaxed font-light">
+            <p className="text-[#94A3B8] text-sm leading-relaxed">
               Empowering careers with AI-driven job matching, intelligent resume building, and personalized career guidance for the modern workforce.
             </p>
             
             {/* Contact Info */}
-            <div className="space-y-2 pt-2">
-              <a href="mailto:support@aijobportal.com" className="flex items-center gap-2 text-white/90 hover:text-white transition-colors text-sm group">
-                <svg className="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="space-y-3 pt-2">
+              <a href="mailto:support@aijobportal.com" className="flex items-center gap-2 text-[#E2E8F0] hover:text-[#3B82F6] transition-colors text-sm group">
+                <svg className="w-4 h-4 text-[#3B82F6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
                 support@aijobportal.com
               </a>
-              <p className="flex items-center gap-2 text-white/90 text-sm">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <p className="flex items-center gap-2 text-[#E2E8F0] text-sm">
+                <svg className="w-4 h-4 text-[#3B82F6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                 </svg>
                 24/7 Support Available
@@ -43,23 +43,23 @@ export default function Footer() {
 
           {/* Section 2: For Candidates */}
           <div className="space-y-5">
-            <h3 className="text-lg font-bold text-white tracking-wide border-b border-white/20 pb-3">For Candidates</h3>
+            <h3 className="text-base font-semibold text-white tracking-wide border-b border-[#334155] pb-3">For Candidates</h3>
             <ul className="space-y-3">
               <li>
-                <Link href="/jobs" className="text-white/90 hover:text-[#4EA8FF] hover:translate-x-1 transition-all duration-200 text-sm flex items-center gap-2 group">
-                  <span className="w-1.5 h-1.5 bg-white/60 rounded-full group-hover:bg-[#4EA8FF] transition-colors"></span>
+                <Link href="/jobs" className="text-[#CBD5E1] hover:text-[#3B82F6] transition-colors text-sm flex items-center gap-2 group">
+                  <span className="w-1.5 h-1.5 bg-[#3B82F6] rounded-full"></span>
                   Browse Jobs
                 </Link>
               </li>
               <li>
-                <Link href="/resume" className="text-white/90 hover:text-[#4EA8FF] hover:translate-x-1 transition-all duration-200 text-sm flex items-center gap-2 group">
-                  <span className="w-1.5 h-1.5 bg-white/60 rounded-full group-hover:bg-[#4EA8FF] transition-colors"></span>
+                <Link href="/resume" className="text-[#CBD5E1] hover:text-[#3B82F6] transition-colors text-sm flex items-center gap-2 group">
+                  <span className="w-1.5 h-1.5 bg-[#3B82F6] rounded-full"></span>
                   Resume Builder
                 </Link>
               </li>
               <li>
-                <Link href="/applications" className="text-white/90 hover:text-[#4EA8FF] hover:translate-x-1 transition-all duration-200 text-sm flex items-center gap-2 group">
-                  <span className="w-1.5 h-1.5 bg-white/60 rounded-full group-hover:bg-[#4EA8FF] transition-colors"></span>
+                <Link href="/applications" className="text-[#CBD5E1] hover:text-[#3B82F6] transition-colors text-sm flex items-center gap-2 group">
+                  <span className="w-1.5 h-1.5 bg-[#3B82F6] rounded-full"></span>
                   My Applications
                 </Link>
               </li>
@@ -68,23 +68,23 @@ export default function Footer() {
 
           {/* Section 3: For Employers */}
           <div className="space-y-5">
-            <h3 className="text-lg font-bold text-white tracking-wide border-b border-white/20 pb-3">For Employers</h3>
+            <h3 className="text-base font-semibold text-white tracking-wide border-b border-[#334155] pb-3">For Employers</h3>
             <ul className="space-y-3">
               <li>
-                <Link href="/employers" className="text-white/90 hover:text-[#4EA8FF] hover:translate-x-1 transition-all duration-200 text-sm flex items-center gap-2 group">
-                  <span className="w-1.5 h-1.5 bg-white/60 rounded-full group-hover:bg-[#4EA8FF] transition-colors"></span>
+                <Link href="/employers" className="text-[#CBD5E1] hover:text-[#3B82F6] transition-colors text-sm flex items-center gap-2 group">
+                  <span className="w-1.5 h-1.5 bg-[#3B82F6] rounded-full"></span>
                   Post a Job
                 </Link>
               </li>
               <li>
-                <Link href="/companies" className="text-white/90 hover:text-[#4EA8FF] hover:translate-x-1 transition-all duration-200 text-sm flex items-center gap-2 group">
-                  <span className="w-1.5 h-1.5 bg-white/60 rounded-full group-hover:bg-[#4EA8FF] transition-colors"></span>
+                <Link href="/companies" className="text-[#CBD5E1] hover:text-[#3B82F6] transition-colors text-sm flex items-center gap-2 group">
+                  <span className="w-1.5 h-1.5 bg-[#3B82F6] rounded-full"></span>
                   Browse Companies
                 </Link>
               </li>
               <li>
-                <Link href="/dashboard" className="text-white/90 hover:text-[#4EA8FF] hover:translate-x-1 transition-all duration-200 text-sm flex items-center gap-2 group">
-                  <span className="w-1.5 h-1.5 bg-white/60 rounded-full group-hover:bg-[#4EA8FF] transition-colors"></span>
+                <Link href="/dashboard" className="text-[#CBD5E1] hover:text-[#3B82F6] transition-colors text-sm flex items-center gap-2 group">
+                  <span className="w-1.5 h-1.5 bg-[#3B82F6] rounded-full"></span>
                   Recruiter Dashboard
                 </Link>
               </li>
@@ -93,23 +93,23 @@ export default function Footer() {
 
           {/* Section 4: Company */}
           <div className="space-y-5">
-            <h3 className="text-lg font-bold text-white tracking-wide border-b border-white/20 pb-3">Company</h3>
+            <h3 className="text-base font-semibold text-white tracking-wide border-b border-[#334155] pb-3">Company</h3>
             <ul className="space-y-3">
               <li>
-                <Link href="/about" className="text-white/90 hover:text-[#4EA8FF] hover:translate-x-1 transition-all duration-200 text-sm flex items-center gap-2 group">
-                  <span className="w-1.5 h-1.5 bg-white/60 rounded-full group-hover:bg-[#4EA8FF] transition-colors"></span>
+                <Link href="/about" className="text-[#CBD5E1] hover:text-[#3B82F6] transition-colors text-sm flex items-center gap-2 group">
+                  <span className="w-1.5 h-1.5 bg-[#3B82F6] rounded-full"></span>
                   About Us
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="text-white/90 hover:text-[#4EA8FF] hover:translate-x-1 transition-all duration-200 text-sm flex items-center gap-2 group">
-                  <span className="w-1.5 h-1.5 bg-white/60 rounded-full group-hover:bg-[#4EA8FF] transition-colors"></span>
+                <Link href="/contact" className="text-[#CBD5E1] hover:text-[#3B82F6] transition-colors text-sm flex items-center gap-2 group">
+                  <span className="w-1.5 h-1.5 bg-[#3B82F6] rounded-full"></span>
                   Contact
                 </Link>
               </li>
               <li>
-                <Link href="/privacy" className="text-white/90 hover:text-[#4EA8FF] hover:translate-x-1 transition-all duration-200 text-sm flex items-center gap-2 group">
-                  <span className="w-1.5 h-1.5 bg-white/60 rounded-full group-hover:bg-[#4EA8FF] transition-colors"></span>
+                <Link href="/privacy" className="text-[#CBD5E1] hover:text-[#3B82F6] transition-colors text-sm flex items-center gap-2 group">
+                  <span className="w-1.5 h-1.5 bg-[#3B82F6] rounded-full"></span>
                   Privacy Policy
                 </Link>
               </li>
@@ -118,20 +118,20 @@ export default function Footer() {
         </div>
 
         {/* Social Media Section */}
-        <div className="border-t border-white/20 pt-8 pb-6">
+        <div className="border-t border-[#334155] pt-8 pb-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-4">
-              <span className="text-sm text-white/80 font-medium">Follow Us:</span>
+              <span className="text-sm text-[#E2E8F0] font-medium">Follow Us:</span>
               <div className="flex items-center gap-3">
                 {/* LinkedIn */}
                 <a 
                   href="https://linkedin.com" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="w-10 h-10 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white hover:scale-110 transition-all duration-300 group shadow-lg"
+                  className="w-10 h-10 bg-[#1E293B] rounded-full flex items-center justify-center hover:bg-[#3B82F6] transition-all duration-300 group"
                   aria-label="LinkedIn"
                 >
-                  <svg className="w-5 h-5 text-white group-hover:text-[#0066FF] transition-colors" fill="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-[#94A3B8] group-hover:text-white transition-colors" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
                   </svg>
                 </a>
@@ -141,10 +141,10 @@ export default function Footer() {
                   href="https://twitter.com" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="w-10 h-10 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white hover:scale-110 transition-all duration-300 group shadow-lg"
+                  className="w-10 h-10 bg-[#1E293B] rounded-full flex items-center justify-center hover:bg-[#3B82F6] transition-all duration-300 group"
                   aria-label="Twitter"
                 >
-                  <svg className="w-5 h-5 text-white group-hover:text-[#0066FF] transition-colors" fill="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-[#94A3B8] group-hover:text-white transition-colors" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                   </svg>
                 </a>
@@ -154,10 +154,10 @@ export default function Footer() {
                   href="https://instagram.com" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="w-10 h-10 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white hover:scale-110 transition-all duration-300 group shadow-lg"
+                  className="w-10 h-10 bg-[#1E293B] rounded-full flex items-center justify-center hover:bg-[#3B82F6] transition-all duration-300 group"
                   aria-label="Instagram"
                 >
-                  <svg className="w-5 h-5 text-white group-hover:text-[#0066FF] transition-colors" fill="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-[#94A3B8] group-hover:text-white transition-colors" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
                   </svg>
                 </a>
@@ -165,7 +165,7 @@ export default function Footer() {
             </div>
 
             {/* Copyright */}
-            <p className="text-white/80 text-sm font-light">
+            <p className="text-[#94A3B8] text-sm">
               © 2025 AI Job Portal. All rights reserved.
             </p>
           </div>

@@ -108,9 +108,11 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
   const initialData = await getJobs(params);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-[#F9FAFB]">
       <Navbar />
-      <JobSearchPage initialData={initialData} orgId={params.orgId} />
+      <main className="pt-4 pb-12">
+        <JobSearchPage initialData={initialData} orgId={params.orgId} />
+      </main>
       <Footer />
     </div>
   );

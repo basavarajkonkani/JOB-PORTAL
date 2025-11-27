@@ -60,17 +60,17 @@ export default function Pagination({
   const pageNumbers = getPageNumbers();
 
   return (
-    <div className="mt-12 mb-16">
+    <nav className="mt-10 mb-8" aria-label="Pagination">
       {/* Subtle top border for visual separation */}
-      <div className="w-full h-px bg-gray-200/40 mb-12"></div>
+      <div className="w-full h-px bg-[#E5E7EB] mb-8"></div>
 
       {/* Pagination Container - Perfectly Centered */}
-      <div className="flex items-center justify-center gap-2">
+      <div className="flex items-center justify-center gap-1.5">
         {/* Previous Button */}
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1 || isLoading}
-          className="group flex items-center gap-2 px-4 py-2.5 bg-white text-gray-700 font-medium rounded-full border border-gray-200 hover:border-[#005DFF] hover:bg-[#005DFF] hover:text-white hover:scale-105 hover:shadow-lg disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:bg-white disabled:hover:text-gray-700 disabled:hover:border-gray-200 disabled:hover:shadow-none transition-all duration-200 ease-in-out shadow-sm"
+          className="group flex items-center gap-1.5 px-3.5 py-2 bg-white text-[#374151] text-[14px] font-medium rounded-lg border border-[#E5E7EB] hover:border-[#2563EB] hover:bg-[#2563EB] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-[#374151] disabled:hover:border-[#E5E7EB] transition-all duration-200"
           aria-label="Previous page"
         >
           <ChevronLeft className="w-4 h-4" />
@@ -78,13 +78,13 @@ export default function Pagination({
         </button>
 
         {/* Page Numbers */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           {pageNumbers.map((page, index) => {
             if (page === '...') {
               return (
                 <span
                   key={`ellipsis-${index}`}
-                  className="px-3 py-2 text-gray-400 font-medium"
+                  className="px-2 py-2 text-[#9CA3AF] text-[14px] font-medium"
                 >
                   ...
                 </span>
@@ -100,13 +100,13 @@ export default function Pagination({
                 onClick={() => onPageChange(pageNum)}
                 disabled={isLoading}
                 className={`
-                  min-w-[44px] px-4 py-2.5 font-semibold rounded-full transition-all duration-200 ease-in-out shadow-sm
+                  min-w-[40px] px-3 py-2 text-[14px] font-semibold rounded-lg transition-all duration-200
                   ${
                     isActive
-                      ? 'bg-[#005DFF] text-white shadow-md hover:shadow-lg scale-105'
-                      : 'bg-white text-gray-700 border border-gray-200 hover:border-[#4EA8FF] hover:bg-[#4EA8FF]/10 hover:text-[#005DFF] hover:scale-105 hover:shadow-md'
+                      ? 'bg-[#2563EB] text-white'
+                      : 'bg-white text-[#374151] border border-[#E5E7EB] hover:border-[#2563EB] hover:text-[#2563EB]'
                   }
-                  disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100
+                  disabled:opacity-40 disabled:cursor-not-allowed
                 `}
                 aria-label={`Go to page ${pageNum}`}
                 aria-current={isActive ? 'page' : undefined}
@@ -121,7 +121,7 @@ export default function Pagination({
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages || isLoading}
-          className="group flex items-center gap-2 px-4 py-2.5 bg-white text-gray-700 font-medium rounded-full border border-gray-200 hover:border-[#005DFF] hover:bg-[#005DFF] hover:text-white hover:scale-105 hover:shadow-lg disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:bg-white disabled:hover:text-gray-700 disabled:hover:border-gray-200 disabled:hover:shadow-none transition-all duration-200 ease-in-out shadow-sm"
+          className="group flex items-center gap-1.5 px-3.5 py-2 bg-white text-[#374151] text-[14px] font-medium rounded-lg border border-[#E5E7EB] hover:border-[#2563EB] hover:bg-[#2563EB] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-[#374151] disabled:hover:border-[#E5E7EB] transition-all duration-200"
           aria-label="Next page"
         >
           <span className="hidden sm:inline">Next</span>
@@ -129,10 +129,10 @@ export default function Pagination({
         </button>
       </div>
 
-      {/* Page Info - Optional, shows current position */}
-      <div className="text-center mt-4 text-sm text-gray-500 font-medium">
+      {/* Page Info */}
+      <div className="text-center mt-3 text-[13px] text-[#6F6F6F] font-medium">
         Page {currentPage} of {totalPages}
       </div>
-    </div>
+    </nav>
   );
 }

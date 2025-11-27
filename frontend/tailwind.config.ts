@@ -15,18 +15,34 @@ const config: Config = {
       },
       // Design System - Container
       maxWidth: {
-        'container': '1200px',
+        'container': '1400px',
       },
-      // Premium Design System - Typography
+      // Professional Typography System
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        display: ['Space Grotesk', 'Poppins', 'Inter', 'system-ui', 'sans-serif'],
-        heading: ['Space Grotesk', 'Poppins', 'sans-serif'],
+        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+        display: ['Poppins', 'Inter', 'system-ui', 'sans-serif'],
+        heading: ['Poppins', 'Inter', 'sans-serif'],
       },
       fontSize: {
+        // Typography Hierarchy
+        'page-title': ['2rem', { lineHeight: '1.25', letterSpacing: '-0.02em', fontWeight: '700' }], // 32px - H1
+        'card-title': ['1.5rem', { lineHeight: '1.25', letterSpacing: '-0.01em', fontWeight: '700' }], // 24px - H2
+        'section-title': ['1.125rem', { lineHeight: '1.4', letterSpacing: '-0.01em', fontWeight: '600' }], // 18px - H3
+        'body': ['0.9375rem', { lineHeight: '1.6', fontWeight: '400' }], // 15px - Body
+        'body-sm': ['0.875rem', { lineHeight: '1.5', fontWeight: '400' }], // 14px - Small body
+        'tag': ['0.75rem', { lineHeight: '1', fontWeight: '500' }], // 12px - Tags
+        'tag-sm': ['0.8125rem', { lineHeight: '1', fontWeight: '500' }], // 13px - Medium tags
+        // Legacy sizes
         'hero-mobile': ['1.75rem', { lineHeight: '1.2', letterSpacing: '-0.02em' }],
         'hero-tablet': ['2.25rem', { lineHeight: '1.2', letterSpacing: '-0.02em' }],
         'hero-desktop': ['3rem', { lineHeight: '1.15', letterSpacing: '-0.02em' }],
+      },
+      // Line Heights
+      lineHeight: {
+        'tight': '1.25',
+        'snug': '1.4',
+        'normal': '1.5',
+        'relaxed': '1.6',
       },
       // Premium Design System - Colors (Blue-Violet Theme)
       colors: {

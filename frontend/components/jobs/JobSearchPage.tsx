@@ -227,17 +227,18 @@ export default function JobSearchPage({ initialData, orgId }: JobSearchPageProps
   };
 
   return (
-    <div>
-      <div className="mb-8">
+    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Page Header */}
+      <header className="mb-8">
         {orgId ? (
           <>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <h1 className="job-page-title text-[32px] font-bold text-[#1A1A1A] mb-2 tracking-tight">
               {orgName ? `Jobs at ${orgName}` : 'Company Jobs'}
-            </h2>
-            <p className="text-base text-gray-600">
+            </h1>
+            <p className="text-[15px] text-[#6F6F6F] leading-relaxed">
               Explore open positions at this company
               {internalJobs.length > 0 && (
-                <span className="ml-2 inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700">
+                <span className="ml-3 inline-flex items-center px-3 py-1 rounded-full text-[12px] font-medium bg-[#EFF6FF] text-[#2563EB] border border-[#2563EB]/10">
                   {internalJobs.length} {internalJobs.length === 1 ? 'position' : 'positions'} available
                 </span>
               )}
@@ -245,37 +246,24 @@ export default function JobSearchPage({ initialData, orgId }: JobSearchPageProps
           </>
         ) : (
           <>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Global Job Search</h2>
-            <p className="text-base text-gray-600">
+            <h1 className="job-page-title text-[32px] font-bold text-[#1A1A1A] mb-2 tracking-tight">Global Job Search</h1>
+            <p className="text-[15px] text-[#6F6F6F] leading-relaxed">
               Search thousands of jobs from across India powered by Adzuna
               {adzunaTotalCount > 0 && (
-                <span className="ml-2 inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700">
+                <span className="ml-3 inline-flex items-center px-3 py-1 rounded-full text-[12px] font-medium bg-[#EFF6FF] text-[#2563EB] border border-[#2563EB]/10">
                   {adzunaTotalCount.toLocaleString()} jobs available
                 </span>
               )}
             </p>
           </>
         )}
-      </div>
+      </header>
 
       <div className="flex flex-col lg:flex-row gap-8">
           {/* Filters Sidebar - Only show for global search */}
           {!orgId && (
-            <aside className="lg:w-64 flex-shrink-0">
+            <aside className="lg:w-[280px] flex-shrink-0">
               <JobFilters filters={filters} onFilterChange={handleFilterChange} />
-              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-sm text-blue-800">
-                  <strong>Tip:</strong> Try searching for "developer", "designer", or "engineer"
-                </p>
-                {filters.title && (
-                  <button
-                    onClick={() => searchAdzunaJobs(1)}
-                    className="mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors"
-                  >
-                    Search Jobs
-                  </button>
-                )}
-              </div>
             </aside>
           )}
 
@@ -285,55 +273,62 @@ export default function JobSearchPage({ initialData, orgId }: JobSearchPageProps
             {orgId && (
               <>
                 {internalLoading ? (
-                  <div className="space-y-5">
+                  <div className="space-y-6">
                     {[...Array(3)].map((_, i) => (
                       <div
                         key={i}
-                        className="bg-white rounded-xl shadow-md p-6 animate-pulse border border-gray-100"
+                        className="bg-white rounded-2xl p-6 animate-pulse border border-[#E5E7EB]"
                       >
-                        <div className="h-7 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg w-3/4 mb-4"></div>
-                        <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-1/2 mb-3"></div>
-                        <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-2/3"></div>
+                        <div className="h-6 bg-[#F3F4F6] rounded w-3/4 mb-4"></div>
+                        <div className="h-4 bg-[#F3F4F6] rounded w-1/2 mb-3"></div>
+                        <div className="h-4 bg-[#F3F4F6] rounded w-2/3 mb-4"></div>
+                        <div className="flex gap-2">
+                          <div className="h-6 bg-[#F3F4F6] rounded-full w-16"></div>
+                          <div className="h-6 bg-[#F3F4F6] rounded-full w-24"></div>
+                        </div>
                       </div>
                     ))}
                   </div>
                 ) : internalJobs.length > 0 ? (
                   <>
-                  <div className="space-y-5">
+                  <div className="space-y-6">
                     {internalJobs
                       .slice((internalPage - 1) * jobsPerPage, internalPage * jobsPerPage)
                       .map((job) => (
-                      <div
+                      <article
                         key={job.id}
-                        className="bg-white rounded-2xl shadow-sm hover:shadow-2xl transition-all duration-300 p-7 border border-gray-200 hover:border-[#4EA8FF] hover:ring-2 hover:ring-[#4EA8FF]/20"
+                        className="job-card bg-white rounded-2xl p-6 border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.08)] hover:shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1)] hover:border-[#2563EB] transition-all duration-200"
                       >
                         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-5">
-                          <div className="flex-1">
-                            <h2 className="text-2xl font-bold text-[#003366] mb-3 leading-tight tracking-tight hover:text-[#0066FF] transition-colors">{job.title}</h2>
+                          <div className="flex-1 min-w-0">
+                            {/* Job Title */}
+                            <h2 className="text-[24px] font-bold text-[#1A1A1A] mb-3 leading-tight tracking-[-0.01em] hover:text-[#2563EB] transition-colors line-clamp-2">{job.title}</h2>
                             
-                            <div className="flex flex-wrap items-center gap-3 mb-4 text-sm text-[#667085]">
-                              <div className="flex items-center font-medium">
-                                <Briefcase className="w-4 h-4 mr-1.5 text-[#667085]" />
+                            {/* Meta Info Row */}
+                            <div className="flex flex-wrap items-center gap-3 mb-4">
+                              <div className="flex items-center text-[14px] text-[#6F6F6F] font-medium">
+                                <Briefcase className="w-4 h-4 mr-1.5 text-[#9CA3AF]" />
                                 <span>{job.level}</span>
                               </div>
-                              <span className="text-gray-300">•</span>
-                              <div className="flex items-center font-medium">
-                                <MapPin className="w-4 h-4 mr-1.5 text-[#667085]" />
+                              <span className="text-[#D1D5DB]">•</span>
+                              <div className="flex items-center text-[14px] text-[#6F6F6F] font-medium">
+                                <MapPin className="w-4 h-4 mr-1.5 text-[#9CA3AF]" />
                                 <span>{job.location}</span>
                               </div>
                               {job.remote && (
                                 <>
-                                  <span className="text-gray-300">•</span>
-                                  <span className="px-3 py-1 bg-green-50 text-green-700 rounded-full text-xs font-semibold border border-green-200">
+                                  <span className="text-[#D1D5DB]">•</span>
+                                  <span className="px-2.5 py-1 bg-[#F0FDF4] text-[#16A34A] rounded-full text-[12px] font-medium border border-[#16A34A]/15">
                                     Remote
                                   </span>
                                 </>
                               )}
                             </div>
 
+                            {/* Salary */}
                             {job.compensation && (job.compensation.min || job.compensation.max) && (
-                              <div className="flex items-center text-base text-[#16A34A] font-bold mb-4">
-                                <DollarSign className="w-5 h-5 mr-1" />
+                              <div className="flex items-center text-[15px] text-[#16A34A] font-semibold mb-4">
+                                <DollarSign className="w-4 h-4 mr-1" />
                                 <span>
                                   {job.compensation.min && job.compensation.max
                                     ? `${job.compensation.currency} ${job.compensation.min.toLocaleString()} - ${job.compensation.max.toLocaleString()}`
@@ -344,30 +339,33 @@ export default function JobSearchPage({ initialData, orgId }: JobSearchPageProps
                               </div>
                             )}
 
-                            <p className="text-[15px] text-[#667085] mb-4 leading-relaxed line-clamp-3">
+                            {/* Description */}
+                            <p className="text-[15px] text-[#6F6F6F] mb-4 leading-[1.6] line-clamp-2">
                               {job.description}
                             </p>
 
-                            <div className="flex flex-wrap gap-2">
-                              <span className="px-4 py-1.5 bg-[#E6F0FF] text-[#0066FF] rounded-full text-xs font-semibold border border-[#0066FF]/20">
+                            {/* Tags */}
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="px-3 py-1.5 bg-[#EFF6FF] text-[#2563EB] rounded-full text-[12px] font-medium border border-[#2563EB]/10">
                                 {job.type}
                               </span>
-                              <span className="px-4 py-1.5 bg-gray-50 text-gray-600 rounded-full text-xs font-medium border border-gray-200">
+                              <span className="px-3 py-1.5 bg-[#F3F4F6] text-[#6F6F6F] rounded-full text-[12px] font-medium">
                                 Posted {formatDate(job.publishedAt)}
                               </span>
                             </div>
                           </div>
 
-                          <div className="md:ml-4">
+                          {/* Apply Button */}
+                          <div className="md:ml-4 flex-shrink-0 self-start md:self-center">
                             <a
                               href={`/jobs/${job.id}`}
-                              className="inline-flex items-center justify-center bg-[#0066FF] hover:bg-[#4EA8FF] text-white font-bold py-3.5 px-7 rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:scale-105 whitespace-nowrap"
+                              className="inline-flex items-center justify-center bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-[14px] font-semibold py-3 px-6 rounded-xl transition-all hover:shadow-lg whitespace-nowrap"
                             >
                               View Details
                             </a>
                           </div>
                         </div>
-                      </div>
+                      </article>
                     ))}
                   </div>
                   
@@ -385,15 +383,15 @@ export default function JobSearchPage({ initialData, orgId }: JobSearchPageProps
                   )}
                   </>
                 ) : (
-                  <div className="bg-white rounded-lg shadow-sm p-12 text-center">
-                    <Briefcase className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-                    <h3 className="text-xl font-semibold text-gray-700 mb-2">No open positions</h3>
-                    <p className="text-gray-600 mb-6">
+                  <div className="bg-white rounded-2xl border border-[#E5E7EB] p-12 text-center">
+                    <Briefcase className="w-14 h-14 mx-auto text-[#9CA3AF] mb-4" />
+                    <h3 className="text-[18px] font-semibold text-[#1A1A1A] mb-2">No open positions</h3>
+                    <p className="text-[15px] text-[#6F6F6F] mb-6 leading-relaxed">
                       This company doesn't have any open positions at the moment.
                     </p>
                     <a
                       href="/jobs"
-                      className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+                      className="inline-block bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-[14px] font-semibold py-3 px-6 rounded-xl transition-all"
                     >
                       Browse All Jobs
                     </a>
@@ -406,91 +404,101 @@ export default function JobSearchPage({ initialData, orgId }: JobSearchPageProps
             {!orgId && (
               <>
                 {adzunaError && (
-                  <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-xl">
-                    <p className="text-sm text-red-700 font-medium">{adzunaError}</p>
+                  <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
+                    <p className="text-[14px] text-red-700 font-medium">{adzunaError}</p>
                   </div>
                 )}
 
                 {adzunaLoading ? (
-                <div className="space-y-5">
+                <div className="space-y-6">
                   {[...Array(5)].map((_, i) => (
                     <div
                       key={i}
-                      className="bg-white rounded-xl shadow-md p-6 animate-pulse border border-gray-100"
+                      className="bg-white rounded-2xl p-6 animate-pulse border border-[#E5E7EB]"
                     >
-                      <div className="h-7 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg w-3/4 mb-4"></div>
-                      <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-1/2 mb-3"></div>
-                      <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-2/3"></div>
+                      <div className="h-6 bg-[#F3F4F6] rounded w-3/4 mb-4"></div>
+                      <div className="h-4 bg-[#F3F4F6] rounded w-1/2 mb-3"></div>
+                      <div className="h-4 bg-[#F3F4F6] rounded w-2/3 mb-4"></div>
+                      <div className="flex gap-2">
+                        <div className="h-6 bg-[#F3F4F6] rounded-full w-16"></div>
+                        <div className="h-6 bg-[#F3F4F6] rounded-full w-24"></div>
+                      </div>
                     </div>
                   ))}
                 </div>
             ) : adzunaJobs.length > 0 ? (
                 <>
-                  <div className="mb-6 text-sm font-medium text-gray-700 bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200 inline-block">
-                    Found <span className="text-blue-600 font-bold">{adzunaTotalCount.toLocaleString()}</span> external jobs
+                  <div className="mb-6 text-[14px] font-medium text-[#374151] bg-white px-4 py-2.5 rounded-lg shadow-sm border border-[#E5E7EB] inline-block">
+                    Found <span className="text-[#2563EB] font-bold">{adzunaTotalCount.toLocaleString()}</span> external jobs
                   </div>
 
-                  <div className="space-y-5">
+                  <div className="space-y-6">
                     {adzunaJobs.map((job) => (
-                      <div
+                      <article
                         key={job.id}
-                        className="bg-white rounded-2xl shadow-sm hover:shadow-2xl transition-all duration-300 p-7 border border-gray-200 hover:border-[#4EA8FF] hover:ring-2 hover:ring-[#4EA8FF]/20"
+                        className="job-card bg-white rounded-2xl p-6 border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.08)] hover:shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1)] hover:border-[#2563EB] transition-all duration-200"
                       >
                         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-5">
-                          <div className="flex-1">
-                            <h2 className="text-2xl font-bold text-[#003366] mb-3 leading-tight tracking-tight hover:text-[#0066FF] transition-colors">{job.title}</h2>
+                          <div className="flex-1 min-w-0">
+                            {/* Job Title */}
+                            <h2 className="text-[24px] font-bold text-[#1A1A1A] mb-3 leading-tight tracking-[-0.01em] hover:text-[#2563EB] transition-colors line-clamp-2">{job.title}</h2>
                             
-                            <div className="flex flex-wrap items-center gap-3 mb-4 text-sm text-[#667085]">
-                              <div className="flex items-center font-medium">
-                                <Briefcase className="w-4 h-4 mr-1.5 text-[#667085]" />
+                            {/* Meta Info Row */}
+                            <div className="flex flex-wrap items-center gap-3 mb-4">
+                              <div className="flex items-center text-[14px] text-[#6F6F6F] font-medium">
+                                <Briefcase className="w-4 h-4 mr-1.5 text-[#9CA3AF]" />
                                 <span>{job.company}</span>
                               </div>
-                              <span className="text-gray-300">•</span>
-                              <div className="flex items-center font-medium">
-                                <MapPin className="w-4 h-4 mr-1.5 text-[#667085]" />
+                              <span className="text-[#D1D5DB]">•</span>
+                              <div className="flex items-center text-[14px] text-[#6F6F6F] font-medium">
+                                <MapPin className="w-4 h-4 mr-1.5 text-[#9CA3AF]" />
                                 <span>{job.location}</span>
                               </div>
                             </div>
 
-                            <div className="flex items-center text-base text-[#16A34A] font-bold mb-4">
-                              <DollarSign className="w-5 h-5 mr-1" />
+                            {/* Salary */}
+                            <div className="flex items-center text-[15px] text-[#16A34A] font-semibold mb-4">
+                              <DollarSign className="w-4 h-4 mr-1" />
                               <span>{formatSalary(job)}</span>
                             </div>
 
-                            <p className="text-[15px] text-[#667085] mb-4 leading-relaxed line-clamp-3">
+                            {/* Description */}
+                            <p className="text-[15px] text-[#6F6F6F] mb-4 leading-[1.6] line-clamp-2">
                               {truncateDescription(job.description, 200)}
                             </p>
 
-                            <div className="flex flex-wrap gap-2">
+                            {/* Tags */}
+                            <div className="flex flex-wrap items-center gap-2">
                               {job.category && (
-                                <span className="px-4 py-1.5 bg-[#E6F0FF] text-[#0066FF] rounded-full text-xs font-semibold border border-[#0066FF]/20">
+                                <span className="px-3 py-1.5 bg-[#EFF6FF] text-[#2563EB] rounded-full text-[12px] font-medium border border-[#2563EB]/10">
                                   {job.category}
                                 </span>
                               )}
                               {job.contract_type && (
-                                <span className="px-4 py-1.5 bg-purple-50 text-purple-700 rounded-full text-xs font-semibold border border-purple-200">
+                                <span className="px-3 py-1.5 bg-[#FAF5FF] text-[#7C3AED] rounded-full text-[12px] font-medium border border-[#7C3AED]/10">
                                   {job.contract_type}
                                 </span>
                               )}
-                              <span className="px-4 py-1.5 bg-gray-50 text-gray-600 rounded-full text-xs font-medium border border-gray-200">
+                              <span className="px-3 py-1.5 bg-[#F3F4F6] text-[#6F6F6F] rounded-full text-[12px] font-medium">
                                 Posted {formatDate(job.created)}
                               </span>
                             </div>
                           </div>
 
-                          <div className="md:ml-4">
+                          {/* Apply Button */}
+                          <div className="md:ml-4 flex-shrink-0 self-start md:self-center">
                             <a
                               href={job.redirect_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center justify-center bg-[#0066FF] hover:bg-[#4EA8FF] text-white font-bold py-3.5 px-7 rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:scale-105 whitespace-nowrap"
+                              className="inline-flex items-center justify-center bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-[14px] font-semibold py-3 px-6 rounded-xl transition-all hover:shadow-lg whitespace-nowrap"
                             >
                               Apply Now
                               <ExternalLink className="ml-2 w-4 h-4" />
                             </a>
                           </div>
                         </div>
-                      </div>
+                      </article>
                     ))}
                   </div>
 
@@ -508,10 +516,10 @@ export default function JobSearchPage({ initialData, orgId }: JobSearchPageProps
                   )}
                 </>
                 ) : !adzunaLoading && !adzunaError ? (
-                  <div className="bg-white rounded-lg shadow-sm p-12 text-center">
-                    <Search className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-                    <h3 className="text-xl font-semibold text-gray-700 mb-2">No jobs found</h3>
-                    <p className="text-gray-600">
+                  <div className="bg-white rounded-2xl border border-[#E5E7EB] p-12 text-center">
+                    <Search className="w-14 h-14 mx-auto text-[#9CA3AF] mb-4" />
+                    <h3 className="text-[18px] font-semibold text-[#1A1A1A] mb-2">No jobs found</h3>
+                    <p className="text-[15px] text-[#6F6F6F] leading-relaxed">
                       Try adjusting your search criteria or keywords
                     </p>
                   </div>

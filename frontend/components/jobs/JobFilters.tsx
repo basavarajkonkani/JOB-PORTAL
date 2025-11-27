@@ -43,11 +43,11 @@ export default function JobFilters({ filters, onFilterChange }: JobFiltersProps)
     localFilters.remote !== null;
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6 sticky top-4 border border-gray-100">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold text-gray-900 flex items-center">
+    <div className="filter-container bg-white rounded-xl p-5 sticky top-4 border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+      <div className="flex items-center justify-between mb-5">
+        <h3 className="text-[18px] font-semibold text-[#1A1A1A] flex items-center tracking-tight">
           <svg
-            className="w-5 h-5 mr-2 text-blue-600"
+            className="w-5 h-5 mr-2 text-[#2563EB]"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -60,24 +60,24 @@ export default function JobFilters({ filters, onFilterChange }: JobFiltersProps)
             />
           </svg>
           Filters
-        </h2>
+        </h3>
         {hasActiveFilters && (
-          <span className="bg-blue-100 text-blue-700 text-xs font-semibold px-2.5 py-1 rounded-full">
+          <span className="bg-[#EFF6FF] text-[#2563EB] text-[12px] font-medium px-2.5 py-1 rounded-full border border-[#2563EB]/10">
             Active
           </span>
         )}
       </div>
 
-      <div className="space-y-5">
+      <div className="space-y-4">
         {/* Title Search */}
         <div>
-          <label htmlFor="title" className="block text-sm font-semibold text-gray-700 mb-2">
+          <label htmlFor="title" className="filter-label block text-[14px] font-semibold text-[#1A1A1A] mb-1.5">
             Job Title
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <svg
-                className="h-5 w-5 text-gray-400"
+                className="h-4 w-4 text-[#9CA3AF]"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -96,20 +96,20 @@ export default function JobFilters({ filters, onFilterChange }: JobFiltersProps)
               value={localFilters.title}
               onChange={(e) => handleInputChange('title', e.target.value)}
               placeholder="e.g. Software Engineer"
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all"
+              className="filter-input w-full pl-9 pr-3 py-2.5 border border-[#D1D5DB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] text-[14px] text-[#374151] transition-all placeholder:text-[#9CA3AF]"
             />
           </div>
         </div>
 
         {/* Level Filter */}
         <div>
-          <label htmlFor="level" className="block text-sm font-semibold text-gray-700 mb-2">
+          <label htmlFor="level" className="filter-label block text-[14px] font-semibold text-[#1A1A1A] mb-1.5">
             Experience Level
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <svg
-                className="h-5 w-5 text-gray-400"
+                className="h-4 w-4 text-[#9CA3AF]"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -126,7 +126,7 @@ export default function JobFilters({ filters, onFilterChange }: JobFiltersProps)
               id="level"
               value={localFilters.level}
               onChange={(e) => handleInputChange('level', e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm appearance-none bg-white transition-all"
+              className="filter-input w-full pl-9 pr-8 py-2.5 border border-[#D1D5DB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] text-[14px] text-[#374151] appearance-none bg-white transition-all cursor-pointer"
             >
               <option value="">All Levels</option>
               <option value="entry">Entry Level</option>
@@ -137,7 +137,7 @@ export default function JobFilters({ filters, onFilterChange }: JobFiltersProps)
             </select>
             <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
               <svg
-                className="h-5 w-5 text-gray-400"
+                className="h-4 w-4 text-[#9CA3AF]"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -155,13 +155,13 @@ export default function JobFilters({ filters, onFilterChange }: JobFiltersProps)
 
         {/* Location Filter */}
         <div>
-          <label htmlFor="location" className="block text-sm font-semibold text-gray-700 mb-2">
+          <label htmlFor="location" className="filter-label block text-[14px] font-semibold text-[#1A1A1A] mb-1.5">
             Location
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <svg
-                className="h-5 w-5 text-gray-400"
+                className="h-4 w-4 text-[#9CA3AF]"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -186,36 +186,36 @@ export default function JobFilters({ filters, onFilterChange }: JobFiltersProps)
               value={localFilters.location}
               onChange={(e) => handleInputChange('location', e.target.value)}
               placeholder="e.g. San Francisco"
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all"
+              className="filter-input w-full pl-9 pr-3 py-2.5 border border-[#D1D5DB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] text-[14px] text-[#374151] transition-all placeholder:text-[#9CA3AF]"
             />
           </div>
         </div>
 
         {/* Remote Filter */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-3">Work Type</label>
-          <div className="space-y-2.5">
-            <label className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+          <label className="filter-label block text-[14px] font-semibold text-[#1A1A1A] mb-2">Work Type</label>
+          <div className="space-y-2">
+            <label className="flex items-center p-2.5 border border-[#E5E7EB] rounded-lg hover:bg-[#F9FAFB] cursor-pointer transition-colors">
               <input
                 type="radio"
                 name="remote"
                 checked={localFilters.remote === null}
                 onChange={() => handleInputChange('remote', null)}
-                className="mr-3 text-blue-600 focus:ring-blue-500 w-4 h-4"
+                className="mr-2.5 text-[#2563EB] focus:ring-[#2563EB] w-4 h-4"
               />
-              <span className="text-sm font-medium text-gray-700">All Types</span>
+              <span className="text-[14px] font-medium text-[#374151]">All Types</span>
             </label>
-            <label className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+            <label className="flex items-center p-2.5 border border-[#E5E7EB] rounded-lg hover:bg-[#F9FAFB] cursor-pointer transition-colors">
               <input
                 type="radio"
                 name="remote"
                 checked={localFilters.remote === true}
                 onChange={() => handleInputChange('remote', true)}
-                className="mr-3 text-blue-600 focus:ring-blue-500 w-4 h-4"
+                className="mr-2.5 text-[#2563EB] focus:ring-[#2563EB] w-4 h-4"
               />
               <div className="flex items-center">
                 <svg
-                  className="w-4 h-4 text-green-600 mr-2"
+                  className="w-4 h-4 text-[#16A34A] mr-1.5"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
@@ -225,26 +225,26 @@ export default function JobFilters({ filters, onFilterChange }: JobFiltersProps)
                     clipRule="evenodd"
                   />
                 </svg>
-                <span className="text-sm font-medium text-gray-700">Remote Only</span>
+                <span className="text-[14px] font-medium text-[#374151]">Remote Only</span>
               </div>
             </label>
-            <label className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+            <label className="flex items-center p-2.5 border border-[#E5E7EB] rounded-lg hover:bg-[#F9FAFB] cursor-pointer transition-colors">
               <input
                 type="radio"
                 name="remote"
                 checked={localFilters.remote === false}
                 onChange={() => handleInputChange('remote', false)}
-                className="mr-3 text-blue-600 focus:ring-blue-500 w-4 h-4"
+                className="mr-2.5 text-[#2563EB] focus:ring-[#2563EB] w-4 h-4"
               />
               <div className="flex items-center">
-                <svg className="w-4 h-4 text-blue-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-4 h-4 text-[#2563EB] mr-1.5" fill="currentColor" viewBox="0 0 20 20">
                   <path
                     fillRule="evenodd"
                     d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm3 1h6v4H7V5zm6 6H7v2h6v-2z"
                     clipRule="evenodd"
                   />
                 </svg>
-                <span className="text-sm font-medium text-gray-700">On-site</span>
+                <span className="text-[14px] font-medium text-[#374151]">On-site</span>
               </div>
             </label>
           </div>
@@ -252,17 +252,17 @@ export default function JobFilters({ filters, onFilterChange }: JobFiltersProps)
       </div>
 
       {/* Action Buttons */}
-      <div className="mt-6 space-y-3">
+      <div className="mt-5 space-y-2.5">
         <button
           onClick={handleApplyFilters}
-          className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-4 rounded-lg hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-semibold shadow-lg shadow-blue-500/30 transition-all hover:shadow-xl hover:shadow-blue-500/40"
+          className="job-apply-btn w-full bg-[#2563EB] text-white py-2.5 px-4 rounded-lg hover:bg-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 text-[14px] font-semibold transition-all"
         >
           Apply Filters
         </button>
         {hasActiveFilters && (
           <button
             onClick={handleClearFilters}
-            className="w-full bg-white text-gray-700 py-3 px-4 rounded-lg border-2 border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-semibold transition-all"
+            className="w-full bg-white text-[#374151] py-2.5 px-4 rounded-lg border border-[#D1D5DB] hover:bg-[#F9FAFB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 text-[14px] font-medium transition-all"
           >
             Clear All Filters
           </button>
