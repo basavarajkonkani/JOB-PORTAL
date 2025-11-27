@@ -1,5 +1,8 @@
 name: CI/CD Pipeline
 
+# TEMPORARILY DISABLED - Enable when CI/CD infrastructure is ready
+# To re-enable, change 'workflow_dispatch' back to 'push' and 'pull_request'
+
 # ============================================
 # Required GitHub Secrets:
 # ============================================
@@ -33,10 +36,7 @@ name: CI/CD Pipeline
 # ============================================
 
 on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main, develop]
+  workflow_dispatch:  # Manual trigger only - disabled automatic runs
 
 env:
   NODE_VERSION: '20'

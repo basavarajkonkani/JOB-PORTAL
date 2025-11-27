@@ -1,10 +1,8 @@
 name: E2E Tests
 
+# TEMPORARILY DISABLED - Enable when E2E test infrastructure is ready
 on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main, develop]
+  workflow_dispatch:  # Manual trigger only - disabled automatic runs
 
 jobs:
   e2e-tests:
