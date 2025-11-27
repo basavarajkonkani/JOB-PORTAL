@@ -1,56 +1,138 @@
 import Navbar from '@/components/layout/Navbar';
+import Link from 'next/link';
 
-export default function CompaniesPage() {
-  const companies = [
-    {
-      id: 1,
-      name: 'TechCorp',
-      logo: '🏢',
-      jobs: 45,
-      industry: 'Technology',
-      location: 'San Francisco, CA',
-    },
-    {
-      id: 2,
-      name: 'DataSystems',
-      logo: '💻',
-      jobs: 32,
-      industry: 'Software',
-      location: 'New York, NY',
-    },
-    {
-      id: 3,
-      name: 'CloudWorks',
-      logo: '☁️',
-      jobs: 28,
-      industry: 'Cloud Services',
-      location: 'Seattle, WA',
-    },
-    {
-      id: 4,
-      name: 'AI Innovations',
-      logo: '🤖',
-      jobs: 56,
-      industry: 'Artificial Intelligence',
-      location: 'Austin, TX',
-    },
-    {
-      id: 5,
-      name: 'FinTech Solutions',
-      logo: '💰',
-      jobs: 41,
-      industry: 'Finance',
-      location: 'Boston, MA',
-    },
-    {
-      id: 6,
-      name: 'HealthTech',
-      logo: '🏥',
-      jobs: 23,
-      industry: 'Healthcare',
-      location: 'Chicago, IL',
-    },
-  ];
+interface Organization {
+  id: string;
+  name: string;
+  industry?: string;
+  location?: string;
+  description?: string;
+  website?: string;
+  logoUrl?: string;
+}
+
+// Fetch organizations from backend
+async function getOrganizations(): Promise<Organization[]> {
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    const res = await fetch(`${apiUrl}/api/organizations`, {
+      cache: 'no-store',
+    });
+
+    if (!res.ok) {
+      console.error('Failed to fetch organizations:', res.status);
+      return [];
+    }
+
+    return res.json();
+  } catch (error) {
+    console.error('Error fetching organizations:', error);
+    return [];
+  }
+}
+
+// Fetch job count for an organization
+async function getOrgJobCount(orgId: string): Promise<number> {
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    const res = await fetch(`${apiUrl}/api/jobs?orgId=${orgId}`, {
+      cache: 'no-store',
+    });
+
+    if (!res.ok) return 0;
+
+    const data = await res.json();
+    return data.jobs?.length || 0;
+  } catch (error) {
+    return 0;
+  }
+}
+
+// Default companies as fallback
+const defaultCompanies = [
+  {
+    id: 'techcorp-001',
+    name: 'TechCorp',
+    logo: '🏢',
+    jobs: 45,
+    industry: 'Technology',
+    location: 'San Francisco, CA',
+  },
+  {
+    id: 'datasystems-002',
+    name: 'DataSystems',
+    logo: '💻',
+    jobs: 32,
+    industry: 'Software',
+    location: 'New York, NY',
+  },
+  {
+    id: 'cloudworks-003',
+    name: 'CloudWorks',
+    logo: '☁️',
+    jobs: 28,
+    industry: 'Cloud Services',
+    location: 'Seattle, WA',
+  },
+  {
+    id: 'ai-innovations-004',
+    name: 'AI Innovations',
+    logo: '🤖',
+    jobs: 56,
+    industry: 'Artificial Intelligence',
+    location: 'Austin, TX',
+  },
+  {
+    id: 'fintech-solutions-005',
+    name: 'FinTech Solutions',
+    logo: '💰',
+    jobs: 41,
+    industry: 'Finance',
+    location: 'Boston, MA',
+  },
+  {
+    id: 'healthtech-006',
+    name: 'HealthTech',
+    logo: '🏥',
+    jobs: 23,
+    industry: 'Healthcare',
+    location: 'Chicago, IL',
+  },
+];
+
+// Get emoji for industry
+function getIndustryEmoji(industry?: string): string {
+  if (!industry) return '🏢';
+  
+  const industryLower = industry.toLowerCase();
+  if (industryLower.includes('tech') || industryLower.includes('software')) return '💻';
+  if (industryLower.includes('cloud')) return '☁️';
+  if (industryLower.includes('ai') || industryLower.includes('artificial')) return '🤖';
+  if (industryLower.includes('finance') || industryLower.includes('fintech')) return '💰';
+  if (industryLower.includes('health')) return '🏥';
+  if (industryLower.includes('education')) return '📚';
+  if (industryLower.includes('retail') || industryLower.includes('ecommerce')) return '🛒';
+  if (industryLower.includes('media') || industryLower.includes('entertainment')) return '🎬';
+  return '🏢';
+}
+
+export default async function CompaniesPage() {
+  // Fetch real organizations from backend
+  const organizations = await getOrganizations();
+  
+  // Use real data if available, otherwise use default companies
+  const companies = organizations.length > 0 
+    ? await Promise.all(
+        organizations.map(async (org) => ({
+          id: org.id,
+          name: org.name,
+          logo: org.logoUrl || getIndustryEmoji(org.industry),
+          jobs: await getOrgJobCount(org.id),
+          industry: org.industry || 'Technology',
+          location: org.location || 'Location not specified',
+        }))
+      )
+    : defaultCompanies;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
@@ -111,9 +193,12 @@ export default function CompaniesPage() {
                 </div>
               </div>
 
-              <button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-2.5 rounded-lg hover:from-blue-700 hover:to-indigo-700 font-medium transition-all shadow-md hover:shadow-lg">
+              <Link
+                href={`/jobs?orgId=${company.id}`}
+                className="block w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-2.5 rounded-lg hover:from-blue-700 hover:to-indigo-700 font-medium transition-all shadow-md hover:shadow-lg text-center"
+              >
                 View Jobs
-              </button>
+              </Link>
             </div>
           ))}
         </div>

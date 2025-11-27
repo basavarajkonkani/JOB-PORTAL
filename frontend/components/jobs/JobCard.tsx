@@ -98,16 +98,16 @@ export default function JobCard({ job }: JobCardProps) {
   return (
     <div
       onClick={handleCardClick}
-      className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 p-6 cursor-pointer border border-gray-100 hover:border-blue-200 hover:-translate-y-1 group"
+      className="bg-white rounded-2xl shadow-sm hover:shadow-2xl transition-all duration-300 p-7 cursor-pointer border border-gray-200 hover:border-[#4EA8FF] hover:-translate-y-1 group hover:ring-2 hover:ring-[#4EA8FF]/20"
     >
-      <div className="flex justify-between items-start mb-4">
+      <div className="flex justify-between items-start mb-5">
         <div className="flex-1">
-          <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 mb-2 transition-colors">
+          <h3 className="text-2xl font-bold text-[#003366] group-hover:text-[#0066FF] mb-3 transition-colors leading-tight tracking-tight">
             {job.title}
           </h3>
-          <div className="flex flex-wrap gap-2 text-sm text-gray-600">
-            <span className="flex items-center">
-              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex flex-wrap items-center gap-3 text-sm text-[#667085] mb-2">
+            <span className="flex items-center font-medium">
+              <svg className="w-4 h-4 mr-1.5 text-[#667085]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -117,9 +117,9 @@ export default function JobCard({ job }: JobCardProps) {
               </svg>
               {formatLevel(job.level)}
             </span>
-            <span className="text-gray-400">•</span>
-            <span className="flex items-center">
-              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <span className="text-gray-300">•</span>
+            <span className="flex items-center font-medium">
+              <svg className="w-4 h-4 mr-1.5 text-[#667085]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -137,8 +137,8 @@ export default function JobCard({ job }: JobCardProps) {
             </span>
             {job.remote && (
               <>
-                <span className="text-gray-400">•</span>
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                <span className="text-gray-300">•</span>
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-200">
                   Remote
                 </span>
               </>
@@ -149,7 +149,7 @@ export default function JobCard({ job }: JobCardProps) {
         <div className="flex gap-2 ml-4">
           <button
             onClick={handleSave}
-            className="p-2.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+            className="p-2.5 text-gray-400 hover:text-[#0066FF] hover:bg-[#E6F0FF] rounded-xl transition-all"
             aria-label={isSaved ? 'Unsave job' : 'Save job'}
           >
             <svg
@@ -168,7 +168,7 @@ export default function JobCard({ job }: JobCardProps) {
           </button>
           <button
             onClick={handleShare}
-            className="p-2.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+            className="p-2.5 text-gray-400 hover:text-[#0066FF] hover:bg-[#E6F0FF] rounded-xl transition-all"
             aria-label="Share job"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -183,18 +183,25 @@ export default function JobCard({ job }: JobCardProps) {
         </div>
       </div>
 
-      <p className="text-gray-600 text-sm mb-4 line-clamp-2 leading-relaxed">{job.description}</p>
+      <p className="text-[#667085] text-[15px] mb-5 line-clamp-3 leading-relaxed">{job.description}</p>
 
-      <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-        <div className="flex items-center gap-3 text-sm">
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700">
+      <div className="flex items-center justify-between pt-5 border-t border-gray-100">
+        <div className="flex items-center gap-3 text-sm flex-wrap">
+          <span className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-semibold bg-[#E6F0FF] text-[#0066FF] border border-[#0066FF]/20">
             {job.type}
           </span>
-          {compensation && <span className="text-gray-900 font-bold">{compensation}</span>}
+          {compensation && (
+            <span className="flex items-center text-[#16A34A] font-bold text-[15px]">
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              {compensation}
+            </span>
+          )}
         </div>
         <button
           onClick={handleCardClick}
-          className="text-blue-600 hover:text-blue-700 text-sm font-semibold flex items-center gap-1 group-hover:gap-2 transition-all"
+          className="text-[#0066FF] hover:text-[#4EA8FF] text-sm font-bold flex items-center gap-1 group-hover:gap-2 transition-all"
         >
           View Details
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

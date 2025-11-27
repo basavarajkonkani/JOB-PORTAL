@@ -35,14 +35,6 @@ interface CandidateProfile {
   };
 }
 
-interface Activity {
-  id: string;
-  type: 'application' | 'profile_update' | 'resume_upload';
-  title: string;
-  description: string;
-  timestamp: string;
-}
-
 export default function CandidateDashboard() {
   const { user, signOut } = useAuth();
   const router = useRouter();
@@ -56,7 +48,6 @@ export default function CandidateDashboard() {
     remote: profile?.preferences?.remoteOnly ? true : null,
   });
 
-  const [recentActivity, setRecentActivity] = useState<Activity[]>([]);
   const [profileCompletion, setProfileCompletion] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -88,19 +79,6 @@ export default function CandidateDashboard() {
     return Math.round((completed / total) * 100);
   };
 
-  const getTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInMs = now.getTime() - date.getTime();
-    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-
-    if (diffInDays === 0) return 'Today';
-    if (diffInDays === 1) return 'Yesterday';
-    if (diffInDays < 7) return `${diffInDays} days ago`;
-    if (diffInDays < 30) return `${Math.floor(diffInDays / 7)} weeks ago`;
-    return date.toLocaleDateString();
-  };
-
   const handleSignOut = () => {
     signOut();
     router.push('/signin');
@@ -116,48 +94,45 @@ export default function CandidateDashboard() {
 
   const getTodayDate = () => {
     const options: Intl.DateTimeFormatOptions = { 
-      weekday: 'long', 
-      year: 'numeric', 
       month: 'long', 
-      day: 'numeric' 
+      day: 'numeric',
+      year: 'numeric'
     };
     return new Date().toLocaleDateString('en-US', options);
   };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/40 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent"></div>
-          <p className="text-gray-600 font-medium">Loading your dashboard...</p>
+      <div className="min-h-screen bg-[#0f0f1a] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="animate-spin rounded-full h-12 w-12 border-2 border-[#9b5de5]/20 border-t-[#9b5de5]"></div>
+          <p className="text-white/70 font-medium text-sm">Loading your dashboard...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50/40 via-white to-indigo-50/30 flex">
-      {/* Fixed Sidebar with Gradient */}
-      <aside className="fixed left-0 top-0 h-screen w-72 bg-gradient-to-b from-blue-50/50 via-white to-indigo-50/30 backdrop-blur-sm border-r border-gray-200/60 shadow-xl z-50 flex flex-col">
+    <div className="min-h-screen bg-[#0f0f1a] flex">
+      {/* Compact Sidebar */}
+      <aside className="fixed left-0 top-0 h-screen w-60 bg-[#16161f] border-r border-white/5 z-50 flex flex-col">
         {/* Logo Section */}
-        <div className="p-6 border-b border-gray-200/60">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20">
-              <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        <div className="p-5 border-b border-white/5">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 bg-[#9b5de5] rounded-lg flex items-center justify-center">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             </div>
             <div>
-              <h1 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                AI Job Portal
-              </h1>
-              <p className="text-xs text-gray-600 font-medium">Career Dashboard</p>
+              <h1 className="text-base font-semibold text-white">AI Job Portal</h1>
+              <p className="text-xs text-white/40">Career Platform</p>
             </div>
           </div>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-1.5">
+        <nav className="flex-1 p-3 space-y-1">
           {navItems.map((item) => (
             <button
               key={item.id}
@@ -165,13 +140,13 @@ export default function CandidateDashboard() {
                 setActiveNav(item.id);
                 if (item.path !== '/dashboard') router.push(item.path);
               }}
-              className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-all duration-300 ${
+              className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg font-medium transition-all text-sm ${
                 activeNav === item.id
-                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30 border-2 border-blue-400/30'
-                  : 'text-gray-700 hover:bg-white hover:shadow-md border-2 border-transparent'
+                  ? 'bg-[#9b5de5]/10 text-white border border-[#9b5de5]/20'
+                  : 'text-white/60 hover:text-white hover:bg-white/5'
               }`}
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
               </svg>
               <span>{item.label}</span>
@@ -180,19 +155,19 @@ export default function CandidateDashboard() {
         </nav>
 
         {/* User Section */}
-        <div className="p-4 border-t border-gray-200/60">
-          <div className="flex items-center gap-3 mb-3 p-3 bg-white/60 rounded-xl">
-            <div className="w-11 h-11 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold text-base shadow-lg">
+        <div className="p-3 border-t border-white/5">
+          <div className="flex items-center gap-2.5 mb-2.5 p-2.5 bg-white/5 rounded-lg">
+            <div className="w-9 h-9 bg-[#9b5de5] rounded-full flex items-center justify-center text-white font-semibold text-sm">
               {user?.name?.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-bold text-gray-900 truncate text-sm">{user?.name}</p>
-              <p className="text-xs text-gray-600 truncate">{user?.email}</p>
+              <p className="font-medium text-white text-sm truncate">{user?.name}</p>
+              <p className="text-xs text-white/40 truncate">{user?.email}</p>
             </div>
           </div>
           <button
             onClick={handleSignOut}
-            className="w-full px-4 py-2.5 text-sm font-bold text-red-600 hover:text-white hover:bg-gradient-to-r hover:from-red-500 hover:to-rose-500 rounded-xl bg-red-50 transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-2"
+            className="w-full px-3 py-2 text-sm font-medium text-white/70 hover:text-white bg-white/5 hover:bg-red-500/10 rounded-lg transition-all flex items-center justify-center gap-2 border border-white/5 hover:border-red-500/20"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -203,206 +178,289 @@ export default function CandidateDashboard() {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 ml-72 bg-gradient-to-br from-blue-50/20 via-white to-purple-50/20">
-        {/* Top Header with Gradient Continuity */}
-        <header className="bg-gradient-to-r from-blue-50/50 via-white to-indigo-50/30 backdrop-blur-sm border-b border-gray-200/60 px-12 py-6 sticky top-0 z-40 shadow-sm">
+      <main className="flex-1 ml-60">
+        {/* Top Bar */}
+        <header className="bg-[#16161f] border-b border-white/5 px-6 py-4 sticky top-0 z-40">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 font-display">
-                AI Job Portal
+              <h1 className="text-xl font-semibold text-white mb-0.5">
+                Welcome Back, {user?.name?.split(' ')[0]}
               </h1>
+              <p className="text-white/50 text-sm">Here's what's happening with your job search</p>
             </div>
-            <div className="text-right">
-              <p className="text-sm text-gray-600 font-medium">{getTodayDate()}</p>
+            <div className="px-4 py-2 bg-white/5 rounded-lg border border-white/5">
+              <p className="text-xs text-white/40">Today</p>
+              <p className="text-sm text-white font-medium">{getTodayDate()}</p>
             </div>
           </div>
         </header>
 
         {/* Dashboard Content */}
-        <div className="px-12 py-8 space-y-8">
-          {/* Welcome Hero Section with 3 Key Metrics */}
-          <section className="bg-gradient-to-br from-white via-blue-50/30 to-indigo-50/40 rounded-2xl p-6 shadow-lg border border-gray-200/60 backdrop-blur-sm animate-fade-in">
-            <div className="mb-5">
-              <h2 className="text-2xl font-bold text-gray-900 font-display">
-                Welcome Back, {user?.name?.split(' ')[0]}! 👋
-              </h2>
-              <p className="text-gray-600 mt-1 font-medium">Here's your job search overview</p>
+        <div className="px-6 py-5 space-y-5">
+          {/* Stats Grid */}
+          <section className="grid grid-cols-3 gap-4">
+            {/* Jobs Recommended Card */}
+            <div className="bg-[#16161f] rounded-xl p-5 border border-white/5 hover:border-[#9b5de5]/20 transition-all">
+              <div className="flex items-start justify-between mb-3">
+                <div className="p-2 bg-[#9b5de5]/10 rounded-lg">
+                  <svg className="w-5 h-5 text-[#9b5de5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 text-xs font-medium rounded">
+                  +12%
+                </span>
+              </div>
+              <div>
+                <p className="text-3xl font-bold text-white mb-0.5">{recommendedJobs.length}</p>
+                <p className="text-white/50 text-sm">Jobs Recommended</p>
+              </div>
             </div>
-            
-            <div className="grid grid-cols-3 gap-6">
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-md border border-gray-200/60 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
-                <div className="flex items-center gap-4 mb-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-3xl font-bold text-gray-900">{recommendedJobs.length}</p>
-                  </div>
-                </div>
-                <p className="text-sm font-semibold text-gray-600">Jobs Recommended</p>
-              </div>
 
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-md border border-gray-200/60 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
-                <div className="flex items-center gap-4 mb-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/30 group-hover:scale-110 transition-transform">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-3xl font-bold text-gray-900">{recentActivity.length}</p>
-                  </div>
+            {/* Applications Card */}
+            <div className="bg-[#16161f] rounded-xl p-5 border border-white/5 hover:border-[#9b5de5]/20 transition-all">
+              <div className="flex items-start justify-between mb-3">
+                <div className="p-2 bg-blue-500/10 rounded-lg">
+                  <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
                 </div>
-                <p className="text-sm font-semibold text-gray-600">Applications Submitted</p>
+                <span className="px-2 py-0.5 bg-blue-500/10 text-blue-400 text-xs font-medium rounded">
+                  Active
+                </span>
               </div>
+              <div>
+                <p className="text-3xl font-bold text-white mb-0.5">0</p>
+                <p className="text-white/50 text-sm">Applications</p>
+              </div>
+            </div>
 
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-md border border-gray-200/60 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
-                <div className="flex items-center gap-4 mb-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/30 group-hover:scale-110 transition-transform">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-3xl font-bold text-gray-900">{profileCompletion}%</p>
-                  </div>
+            {/* Profile Strength Card */}
+            <div className="bg-[#16161f] rounded-xl p-5 border border-white/5 hover:border-[#9b5de5]/20 transition-all">
+              <div className="flex items-start justify-between mb-3">
+                <div className="p-2 bg-[#9b5de5]/10 rounded-lg">
+                  <svg className="w-5 h-5 text-[#9b5de5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
                 </div>
-                <p className="text-sm font-semibold text-gray-600">Profile Strength</p>
+                <span className="px-2 py-0.5 bg-[#9b5de5]/10 text-[#9b5de5] text-xs font-medium rounded">
+                  {profileCompletion >= 80 ? 'Strong' : 'Good'}
+                </span>
+              </div>
+              <div>
+                <p className="text-3xl font-bold text-white mb-0.5">{profileCompletion}%</p>
+                <p className="text-white/50 text-sm mb-2">Profile Strength</p>
+                <div className="w-full bg-white/10 rounded-full h-1 overflow-hidden">
+                  <div 
+                    className="h-full bg-[#9b5de5] rounded-full transition-all duration-1000"
+                    style={{ width: `${profileCompletion}%` }}
+                  />
+                </div>
               </div>
             </div>
           </section>
 
-          {/* Profile Completion Banner - Reduced Height */}
+          {/* Profile Completion Banner */}
           {profileCompletion < 100 && (
-            <section className="bg-white rounded-2xl p-6 border border-gray-200/60 shadow-lg backdrop-blur-sm animate-fade-in" style={{ animationDelay: '0.1s' }}>
-              <div className="flex items-center justify-between gap-6">
-                <div className="flex items-center gap-5 flex-1">
-                  <div className="w-14 h-14 bg-gradient-to-br from-pink-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-pink-500/30">
-                    <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            <section className="bg-[#16161f] rounded-xl p-5 border border-[#9b5de5]/20">
+              <div className="flex items-center justify-between gap-5">
+                <div className="flex items-center gap-3 flex-1">
+                  <div className="p-2 bg-[#9b5de5]/10 rounded-lg">
+                    <svg className="w-5 h-5 text-[#9b5de5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-lg font-bold text-gray-900 mb-1 font-display">Boost Your Profile</h3>
-                    <p className="text-sm text-gray-600 mb-3">Complete your profile to unlock better job matches</p>
-                    <div className="w-full bg-gradient-to-r from-gray-100 to-gray-200 rounded-full h-2.5 overflow-hidden relative">
+                    <h3 className="text-base font-semibold text-white mb-0.5">Complete Your Profile</h3>
+                    <p className="text-white/50 text-sm mb-2">Unlock AI-powered job recommendations</p>
+                    <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
                       <div
-                        className="bg-gradient-to-r from-pink-500 to-purple-600 h-2.5 rounded-full transition-all duration-1000 shadow-sm"
+                        className="bg-[#9b5de5] h-1.5 rounded-full transition-all duration-1000"
                         style={{ width: `${profileCompletion}%` }}
-                      ></div>
+                      />
                     </div>
-                    <p className="text-xs text-gray-600 mt-1.5 font-semibold">{profileCompletion}% Complete</p>
+                    <p className="text-white/40 mt-1.5 text-xs">{profileCompletion}% Complete</p>
                   </div>
                 </div>
                 <button
                   onClick={() => router.push('/profile')}
-                  className="px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl hover:from-pink-600 hover:to-purple-700 font-bold shadow-lg shadow-pink-500/30 hover:shadow-xl hover:shadow-pink-500/40 transition-all hover:-translate-y-0.5 text-sm"
+                  className="px-5 py-2.5 bg-[#9b5de5] hover:bg-[#8b4dd5] text-white rounded-lg font-medium transition-all flex items-center gap-2 text-sm"
                 >
-                  Complete Profile
+                  <span>Complete Now</span>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
                 </button>
               </div>
             </section>
           )}
 
-          {/* Two Column Layout - 50/50 Split */}
-          <div className="grid grid-cols-2 gap-6">
-            {/* Recommended Jobs - Equal Height */}
-            <section className="space-y-4 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-              <div className="bg-white rounded-2xl p-6 border border-gray-200/60 shadow-lg backdrop-blur-sm">
-                <div className="flex items-center justify-between mb-5">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-md shadow-blue-500/30">
-                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h2 className="text-lg font-bold text-gray-900 font-display">Recommended For You</h2>
-                      <p className="text-xs text-gray-600">AI-powered matches</p>
-                    </div>
+          {/* Two Column Layout */}
+          <div className="grid grid-cols-2 gap-4">
+            {/* Recommended Jobs Section */}
+            <section className="space-y-4">
+              <div className="bg-[#16161f] rounded-xl p-5 border border-white/5">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h2 className="text-lg font-semibold text-white mb-0.5">Recommended Jobs</h2>
+                    <p className="text-white/50 text-sm">AI-matched opportunities for you</p>
                   </div>
                   <button
                     onClick={() => router.push('/jobs')}
-                    className="px-4 py-2 text-sm text-blue-600 hover:text-white bg-blue-50 hover:bg-gradient-to-r hover:from-blue-600 hover:to-indigo-600 font-semibold rounded-lg transition-all shadow-sm hover:shadow-md"
+                    className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-white text-sm font-medium rounded-lg transition-all border border-white/5 flex items-center gap-1.5"
                   >
-                    View All
+                    <span>View All</span>
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
                   </button>
                 </div>
 
                 {recommendedJobs.length === 0 ? (
-                  <div className="bg-gradient-to-br from-blue-50/50 to-indigo-50/30 rounded-xl p-12 text-center border border-gray-200/60">
-                    <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-md">
-                      <svg className="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="bg-white/5 rounded-lg p-10 text-center border border-white/5">
+                    <div className="w-14 h-14 bg-[#9b5de5]/10 rounded-lg flex items-center justify-center mx-auto mb-3">
+                      <svg className="h-7 w-7 text-[#9b5de5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                       </svg>
                     </div>
-                    <h3 className="text-base font-bold text-gray-900 mb-2">No jobs available yet</h3>
-                    <p className="text-sm text-gray-600 mb-4">Check back later for new opportunities</p>
+                    <h3 className="text-base font-semibold text-white mb-1">No Jobs Yet</h3>
+                    <p className="text-white/50 text-sm mb-3">We're finding perfect opportunities for you</p>
                     <button
                       onClick={() => router.push('/jobs')}
-                      className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 font-bold shadow-md transition-all text-sm"
+                      className="px-5 py-2 bg-[#9b5de5] hover:bg-[#8b4dd5] text-white text-sm font-medium rounded-lg transition-all"
                     >
-                      Browse All Jobs
+                      Explore All Jobs
                     </button>
                   </div>
                 ) : (
-                  <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                  <div className="space-y-2.5 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
                     {recommendedJobs.map((job) => (
-                      <JobCard key={job.id} job={job} />
+                      <div key={job.id}>
+                        <JobCard job={job} />
+                      </div>
                     ))}
                   </div>
                 )}
               </div>
             </section>
 
-            {/* Recent Activity - Equal Height */}
-            <aside className="space-y-4 animate-fade-in" style={{ animationDelay: '0.3s' }}>
-              <div className="bg-white rounded-2xl p-6 border border-gray-200/60 shadow-lg backdrop-blur-sm">
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center shadow-md shadow-purple-500/30">
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h2 className="text-lg font-bold text-gray-900 font-display">Recent Activity</h2>
-                    <p className="text-xs text-gray-600">Your latest actions</p>
-                  </div>
-                </div>
-
-                {recentActivity.length === 0 ? (
-                  <div className="bg-gradient-to-br from-purple-50/50 to-pink-50/30 rounded-xl p-12 text-center border border-gray-200/60 min-h-[300px] flex flex-col items-center justify-center">
-                    <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-md">
-                      <svg className="h-8 w-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            {/* Quick Actions & AI Insights */}
+            <aside className="space-y-4">
+              {/* Quick Actions */}
+              <div className="bg-[#16161f] rounded-xl p-5 border border-white/5">
+                <h3 className="text-base font-semibold text-white mb-3">Quick Actions</h3>
+                <div className="space-y-2">
+                  <button
+                    onClick={() => router.push('/jobs')}
+                    className="group w-full flex items-center gap-2.5 p-2.5 bg-white/5 hover:bg-white/10 rounded-lg transition-all border border-white/5"
+                  >
+                    <div className="p-1.5 bg-[#9b5de5]/10 rounded-lg">
+                      <svg className="w-4 h-4 text-[#9b5de5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                       </svg>
                     </div>
-                    <p className="text-base font-bold text-gray-900 mb-2">No recent activity</p>
-                    <p className="text-sm text-gray-600">Your activity will appear here</p>
+                    <span className="text-white font-medium flex-1 text-left text-sm">Search Jobs</span>
+                    <svg className="w-3.5 h-3.5 text-white/40 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                  
+                  <button
+                    onClick={() => router.push('/resume')}
+                    className="group w-full flex items-center gap-2.5 p-2.5 bg-white/5 hover:bg-white/10 rounded-lg transition-all border border-white/5"
+                  >
+                    <div className="p-1.5 bg-blue-500/10 rounded-lg">
+                      <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                    <span className="text-white font-medium flex-1 text-left text-sm">Update Resume</span>
+                    <svg className="w-3.5 h-3.5 text-white/40 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                  
+                  <button
+                    onClick={() => router.push('/profile')}
+                    className="group w-full flex items-center gap-2.5 p-2.5 bg-white/5 hover:bg-white/10 rounded-lg transition-all border border-white/5"
+                  >
+                    <div className="p-1.5 bg-[#9b5de5]/10 rounded-lg">
+                      <svg className="w-4 h-4 text-[#9b5de5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                    </div>
+                    <span className="text-white font-medium flex-1 text-left text-sm">Edit Profile</span>
+                    <svg className="w-3.5 h-3.5 text-white/40 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              {/* AI Insights */}
+              <div className="bg-[#16161f] rounded-xl p-5 border border-white/5">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="p-1.5 bg-[#9b5de5]/10 rounded-lg">
+                    <svg className="w-4 h-4 text-[#9b5de5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
                   </div>
-                ) : (
-                  <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-                    {recentActivity.map((activity) => (
-                      <div key={activity.id} className="bg-gradient-to-br from-gray-50 to-white rounded-xl p-4 hover:shadow-md transition-all border border-gray-200/60 hover:-translate-y-0.5">
-                        <p className="text-sm font-bold text-gray-900">{activity.title}</p>
-                        <p className="text-sm text-gray-600 mt-1">{activity.description}</p>
-                        <p className="text-xs text-gray-500 mt-2 font-medium">{getTimeAgo(activity.timestamp)}</p>
+                  <h3 className="text-base font-semibold text-white">AI Insights</h3>
+                </div>
+                
+                <div className="space-y-3">
+                  {/* Insight 1 */}
+                  <div className="p-3 bg-white/5 rounded-lg border border-white/5">
+                    <div className="flex items-start gap-2.5">
+                      <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full mt-1.5"></div>
+                      <div className="flex-1">
+                        <p className="text-white text-sm font-medium mb-0.5">Profile Views</p>
+                        <p className="text-white/50 text-xs">Your profile was viewed 24 times this week</p>
+                        <div className="mt-1.5 flex items-center gap-2">
+                          <div className="flex-1 bg-white/10 rounded-full h-1">
+                            <div className="bg-emerald-400 h-1 rounded-full" style={{ width: '75%' }} />
+                          </div>
+                          <span className="text-emerald-400 text-xs font-medium">+15%</span>
+                        </div>
                       </div>
-                    ))}
+                    </div>
                   </div>
-                )}
+
+                  {/* Insight 2 */}
+                  <div className="p-3 bg-white/5 rounded-lg border border-white/5">
+                    <div className="flex items-start gap-2.5">
+                      <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mt-1.5"></div>
+                      <div className="flex-1">
+                        <p className="text-white text-sm font-medium mb-0.5">Skill Match</p>
+                        <p className="text-white/50 text-xs">85% match with trending job requirements</p>
+                        <div className="mt-1.5 flex items-center gap-2">
+                          <div className="flex-1 bg-white/10 rounded-full h-1">
+                            <div className="bg-blue-400 h-1 rounded-full" style={{ width: '85%' }} />
+                          </div>
+                          <span className="text-blue-400 text-xs font-medium">85%</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Insight 3 */}
+                  <div className="p-3 bg-white/5 rounded-lg border border-white/5">
+                    <div className="flex items-start gap-2.5">
+                      <div className="w-1.5 h-1.5 bg-[#9b5de5] rounded-full mt-1.5"></div>
+                      <div className="flex-1">
+                        <p className="text-white text-sm font-medium mb-0.5">Response Rate</p>
+                        <p className="text-white/50 text-xs">Companies respond within 3 days on average</p>
+                        <div className="mt-1.5">
+                          <span className="text-[#9b5de5] text-xs font-medium">3 days avg</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </aside>
           </div>
 
-          {/* Footer */}
-          <footer className="mt-12 py-6 border-t border-gray-200/60 bg-gradient-to-r from-blue-50/30 via-white to-purple-50/30 rounded-2xl">
-            <p className="text-center text-sm text-gray-600 font-medium">
-              © 2025 Nighan2 Labs | Built by Basavaraj Konkani
-            </p>
-          </footer>
         </div>
       </main>
     </div>

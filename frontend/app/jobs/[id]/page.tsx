@@ -4,9 +4,9 @@ import Footer from '@/components/layout/Footer';
 import { Metadata } from 'next';
 
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 // Server-side data fetching for job detail
@@ -36,7 +36,8 @@ async function getJobDetail(jobId: string) {
 
 // Generate metadata for job detail page
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const jobData = await getJobDetail(params.id);
+  const { id } = await params;
+  const jobData = await getJobDetail(id);
 
   if (!jobData || !jobData.job) {
     return {
@@ -51,7 +52,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     job.description.substring(0, 160) + (job.description.length > 160 ? '...' : '');
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-  const canonicalUrl = `${baseUrl}/jobs/${params.id}`;
+  const canonicalUrl = `${baseUrl}/jobs/${id}`;
 
   return {
     title,
@@ -93,7 +94,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function JobPage({ params }: PageProps) {
-  const jobData = await getJobDetail(params.id);
+  const { id } = await params;
+  const jobData = await getJobDetail(id);
 
   // Generate JSON-LD structured data for job posting
   const structuredData = jobData?.job
@@ -150,7 +152,7 @@ export default async function JobPage({ params }: PageProps) {
         />
       )}
       <Navbar />
-      <JobDetailPage jobId={params.id} initialData={jobData} />
+      <JobDetailPage jobId={id} initialData={jobData} />
       <Footer />
     </>
   );

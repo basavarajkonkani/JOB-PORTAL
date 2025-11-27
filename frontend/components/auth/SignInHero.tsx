@@ -91,7 +91,7 @@ export default function SignInHero({ className = '' }: SignInHeroProps) {
         <div className="pt-8 animate-slide-in-left animation-delay-600">
           <div className="relative w-full h-64 rounded-lg overflow-hidden shadow-2xl transition-all duration-500 hover:shadow-3xl hover:scale-105" role="img" aria-label="Professional working on laptop">
             <Image
-              src="/hero-professional.webp"
+              src="/hero-professional.svg"
               alt="Professional using laptop for hiring"
               fill
               sizes="(max-width: 768px) 0vw, (max-width: 1024px) 0vw, 50vw"
