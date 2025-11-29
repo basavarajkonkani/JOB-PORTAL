@@ -28,8 +28,8 @@ const nextConfig: NextConfig = {
   // Compression
   compress: true,
 
-  // Docker standalone output
-  output: 'standalone',
+  // Use standalone output only for Docker builds, not Vercel
+  ...(process.env.DOCKER_BUILD === 'true' ? { output: 'standalone' } : {}),
 
   // Headers for Firebase Auth popup
   async headers() {
