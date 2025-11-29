@@ -22,6 +22,12 @@
     "@aws-sdk/lib-storage": "^3.914.0",
     "@sentry/node": "^8.0.0",
     "@sentry/profiling-node": "^8.0.0",
+    "@types/bcrypt": "^6.0.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/multer": "^2.0.0",
+    "@types/node": "^24.9.1",
     "axios": "^1.13.0",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
@@ -33,17 +39,12 @@
     "multer": "^2.0.2",
     "pdf-parse": "^2.4.5",
     "redis": "^5.8.3",
+    "typescript": "^5.9.3",
     "winston": "^3.11.0",
     "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
-    "@types/bcrypt": "^6.0.0",
-    "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.3",
     "@types/jest": "^29.5.14",
-    "@types/jsonwebtoken": "^9.0.10",
-    "@types/multer": "^2.0.0",
-    "@types/node": "^24.9.1",
     "@types/supertest": "^6.0.3",
     "@typescript-eslint/eslint-plugin": "^8.46.2",
     "@typescript-eslint/parser": "^8.46.2",
@@ -55,7 +56,6 @@
     "prettier": "^3.6.2",
     "supertest": "^7.1.4",
     "ts-jest": "^29.4.5",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "ts-node": "^10.9.2"
   }
 }
