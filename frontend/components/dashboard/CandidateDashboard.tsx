@@ -86,6 +86,16 @@ export default function CandidateDashboard() {
     return Math.round((completed / total) * 100);
   };
 
+  useEffect(() => {
+    if (profile) {
+      setProfileCompletion(calculateProfileCompletion(profile));
+    }
+  }, [profile]);
+
+  useEffect(() => {
+    setIsLoading(profileLoading || jobsLoading);
+  }, [profileLoading, jobsLoading]);
+
   const handleSignOut = () => {
     signOut();
     router.push('/signin');

@@ -67,16 +67,6 @@ export default function CandidateDashboardV3() {
   const [profileCompletion, setProfileCompletion] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    if (profile) {
-      setProfileCompletion(calculateProfileCompletion(profile));
-    }
-  }, [profile]);
-
-  useEffect(() => {
-    setIsLoading(profileLoading || jobsLoading);
-  }, [profileLoading, jobsLoading]);
-
   const calculateProfileCompletion = (profileData: CandidateProfile | null): number => {
     if (!profileData) return 0;
     let completed = 0;
@@ -89,6 +79,26 @@ export default function CandidateDashboardV3() {
     if (profileData.preferences?.locations && profileData.preferences.locations.length > 0) completed++;
     return Math.round((completed / total) * 100);
   };
+
+  useEffect(() => {
+    if (profile) {
+      setProfileCompletion(calculateProfileCompletion(profile));
+    }
+  }, [profile]);
+
+  useEffect(() => {
+    setIsLoading(profileLoading || jobsLoading);
+  }, [profileLoading, jobsLoading]);
+
+  useEffect(() => {
+    if (profile) {
+      setProfileCompletion(calculateProfileCompletion(profile));
+    }
+  }, [profile]);
+
+  useEffect(() => {
+    setIsLoading(profileLoading || jobsLoading);
+  }, [profileLoading, jobsLoading]);
 
   const handleSignOut = () => {
     signOut();
